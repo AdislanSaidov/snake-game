@@ -75,6 +75,7 @@ impl Game {
             }
             Direction::NONE => {}
         }
+
         if self.x == self.food_point.x && self.y == self.food_point.y {
             self.food_point = generate_food();
             let last_idx = self.snake_coords.len() - 1;
@@ -119,7 +120,10 @@ impl Game {
             }
 
             let square = rectangle::square(0.0, 0.0, CELL_SIZE);
-            let center = c.transform.trans(self.food_point.x * self.food_point.y as f64, self.food_point.y * CELL_SIZE);
+            let center = c.transform.trans(
+                self.food_point.x * CELL_SIZE,
+                self.food_point.y * CELL_SIZE
+            );
             rectangle(
                 red,
                 square,
@@ -134,28 +138,16 @@ impl Game {
             Input::Button(but) => match but.state {
                 ButtonState::Press => match but.button {
                     Button::Keyboard(Key::Up) => {
-                        if self.direction == Direction::BOTTOM {
-                            return;
-                        }
-                        self.direction = Direction::TOP
+                        self.change_direction(Direction::TOP, Direction::BOTTOM);
                     }
                     Button::Keyboard(Key::Down) => {
-                        if self.direction == Direction::TOP {
-                            return;
-                        }
-                        self.direction = Direction::BOTTOM
+                        self.change_direction(Direction::BOTTOM, Direction::TOP);
                     }
                     Button::Keyboard(Key::Left) => {
-                        if self.direction == Direction::RIGHT {
-                            return;
-                        }
-                        self.direction = Direction::LEFT
+                        self.change_direction(Direction::LEFT, Direction::RIGHT);
                     }
                     Button::Keyboard(Key::Right) => {
-                        if self.direction == Direction::LEFT {
-                            return;
-                        }
-                        self.direction = Direction::RIGHT
+                        self.change_direction(Direction::RIGHT, Direction::LEFT);
                     }
                     _ => (),
                 }
@@ -163,6 +155,13 @@ impl Game {
             },
             _ => {}
         }
+    }
+
+    fn change_direction(&mut self, new_direction: Direction, opposite_direction: Direction) {
+        if self.direction == opposite_direction {
+            return;
+        }
+        self.direction = new_direction
     }
 }
 
