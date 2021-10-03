@@ -2,6 +2,12 @@ extern crate piston_window;
 
 use piston_window::*;
 use std::collections::VecDeque;
+use rand::Rng;
+
+const WINDOW_WIDTH: f64 = 600.0;
+const WINDOW_HEIGHT: f64 = 600.0;
+
+const CELL_SIZE: f64 = 20.0;
 
 #[derive(PartialEq)]
 enum Direction {
@@ -9,24 +15,29 @@ enum Direction {
     RIGHT,
     TOP,
     BOTTOM,
-    NONE
+    NONE,
 }
 
 struct Point {
     x: f64,
-    y: f64
+    y: f64,
 }
 
 struct Game {
-    xDelta: f64,
-    yDelta: f64,
+    x_delta: f64,
+    y_delta: f64,
     x: f64,
     y: f64,
     direction: Direction,
-    size: f64,
-    cell_size: f64,
-    cell_count: i32,
-    snake_coords: VecDeque<Point>
+    snake_coords: VecDeque<Point>,
+    food_point: Point,
+}
+
+fn generate_food() -> Point {
+    let mut rng = rand::thread_rng();
+    let x = rng.gen_range(0..30) as f64;
+    let y = rng.gen_range(0..30) as f64;
+    return Point { x, y };
 }
 
 impl Game {
@@ -37,15 +48,13 @@ impl Game {
         deque.push_back(Point { x: 2.0, y: 4.0 });
 
         Game {
-            xDelta: 1.0,
-            yDelta: 1.0,
+            x_delta: 1.0,
+            y_delta: 1.0,
             x: 1.0,
             y: 1.0,
             direction: Direction::NONE,
-            size: 20.0,
-            cell_size: 20.0,
-            cell_count: 30,
-            snake_coords: deque
+            snake_coords: deque,
+            food_point: generate_food(),
         }
     }
 
@@ -53,36 +62,39 @@ impl Game {
         let v = (5.0 * upd.dt);
         match self.direction {
             Direction::LEFT => {
-                self.xDelta -= v;
+                self.x_delta -= v;
             }
             Direction::RIGHT => {
-                self.xDelta += v;
+                self.x_delta += v;
             }
             Direction::TOP => {
-                self.yDelta -= v;
+                self.y_delta -= v;
             }
             Direction::BOTTOM => {
-                self.yDelta += v;
+                self.y_delta += v;
             }
-            Direction::NONE => {
-
-            }
+            Direction::NONE => {}
         }
+        if self.x == self.food_point.x && self.y == self.food_point.y {
+            self.food_point = generate_food();
+            let last_idx = self.snake_coords.len() - 1;
+            let last_item = self.snake_coords.get(last_idx).unwrap();
+            self.snake_coords.push_back(Point { x: last_item.x, y: last_item.y })
+        }
+
         if self.direction != Direction::NONE {
-            let oldX = self.x;
-            let oldY = self.y;
-            self.x = self.xDelta.round();
-            self.y = self.yDelta.round();
-            if oldX == self.x && oldY == self.y{
+            let old_x = self.x;
+            let old_y = self.y;
+            self.x = self.x_delta.round();
+            self.y = self.y_delta.round();
+            if old_x == self.x && old_y == self.y {
                 return;
             }
-            self.snake_coords.push_front(Point{ x: self.x, y: self.y });
+            self.snake_coords.push_front(Point { x: self.x, y: self.y });
             self.snake_coords.pop_back();
             println!("{}", upd.dt);
             println!("{}", self.snake_coords.len().to_string());
         }
-
-
     }
 
     fn on_draw(&mut self, ren: &RenderArgs, window: &mut PistonWindow, event: &Event) {
@@ -96,8 +108,8 @@ impl Game {
             let red = [1.0, 0.0, 0.0, 1.0];
             for point in &self.snake_coords {
                 println!("LOOP {} {}", point.x, point.y);
-                let square = rectangle::square(0.0, 0.0, self.size);
-                let center = c.transform.trans(point.x * self.cell_size as f64, point.y * self.cell_size as f64);
+                let square = rectangle::square(0.0, 0.0, CELL_SIZE);
+                let center = c.transform.trans(point.x * CELL_SIZE, point.y * CELL_SIZE);
                 rectangle(
                     red,
                     square,
@@ -106,6 +118,14 @@ impl Game {
                 );
             }
 
+            let square = rectangle::square(0.0, 0.0, CELL_SIZE);
+            let center = c.transform.trans(self.food_point.x * self.food_point.y as f64, self.food_point.y * CELL_SIZE);
+            rectangle(
+                red,
+                square,
+                center,
+                g,
+            );
         });
     }
 
@@ -114,17 +134,29 @@ impl Game {
             Input::Button(but) => match but.state {
                 ButtonState::Press => match but.button {
                     Button::Keyboard(Key::Up) => {
+                        if self.direction == Direction::BOTTOM {
+                            return;
+                        }
                         self.direction = Direction::TOP
-                    },
+                    }
                     Button::Keyboard(Key::Down) => {
+                        if self.direction == Direction::TOP {
+                            return;
+                        }
                         self.direction = Direction::BOTTOM
-                    },
+                    }
                     Button::Keyboard(Key::Left) => {
+                        if self.direction == Direction::RIGHT {
+                            return;
+                        }
                         self.direction = Direction::LEFT
-                    },
+                    }
                     Button::Keyboard(Key::Right) => {
+                        if self.direction == Direction::LEFT {
+                            return;
+                        }
                         self.direction = Direction::RIGHT
-                    },
+                    }
                     _ => (),
                 }
                 _ => {}
@@ -135,8 +167,9 @@ impl Game {
 }
 
 fn main() {
-    let mut window: PistonWindow = WindowSettings::new("piston-tutorial", [600, 600])
+    let mut window: PistonWindow = WindowSettings::new("Snake game", [WINDOW_WIDTH, WINDOW_HEIGHT])
         .exit_on_esc(true)
+        .resizable(false)
         .build()
         .unwrap();
     let mut game = Game::new();
