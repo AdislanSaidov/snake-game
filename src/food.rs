@@ -1,7 +1,9 @@
-use piston_window::{RenderArgs, PistonWindow, Event, G2d, Context};
-use crate::{Game, CELL_SIZE};
+use piston_window::{Context, Event, G2d, PistonWindow, RenderArgs};
 use piston_window::types::ColorComponent;
+
+use crate::Game;
 use crate::point::Point;
+use crate::game::CELL_SIZE;
 
 const FOOD_COLOR: [ColorComponent; 4] = [0.0, 1.0, 0.0, 1.0];
 
