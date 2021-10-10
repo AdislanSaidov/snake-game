@@ -1,3 +1,6 @@
+mod food;
+mod point;
+
 extern crate piston_window;
 
 use std::collections::HashSet;
@@ -6,11 +9,16 @@ use std::hash::{Hash, Hasher};
 
 use piston_window::*;
 use rand::Rng;
+use graphics::types::ColorComponent;
+use crate::food::Food;
+use crate::point::Point;
 
 const WINDOW_WIDTH: f64 = 600.0;
 const WINDOW_HEIGHT: f64 = 600.0;
 
-const CELL_SIZE: f64 = 20.0;
+const CELL_SIZE: i32 = 20;
+
+const SNAKE_COLOR: [ColorComponent; 4] = [1.0, 0.0, 0.0, 1.0];
 
 #[derive(PartialEq)]
 enum Direction {
@@ -21,11 +29,6 @@ enum Direction {
     NONE,
 }
 
-struct Point {
-    x: i32,
-    y: i32,
-}
-
 struct Game {
     x_delta: f64,
     y_delta: f64,
@@ -33,27 +36,25 @@ struct Game {
     y: i32,
     direction: Direction,
     snake_coords: VecDeque<Point>,
-    food_point: Point,
+    food: Food
 }
 
-fn generate_food(snake_coords: &VecDeque<Point>) -> Point {
+fn generate_food(snake_coords: &VecDeque<Point>) -> Food {
     let mut rng = rand::thread_rng();
 
     let mut free_coords: Vec<Point> = Vec::new();
-    (0..30).into_iter().for_each(|i| {
-        (0..30).into_iter().for_each(|k| {
+    for x in 0..30 {
+        for y in 0..30 {
             for p in snake_coords {
-                // println!("x: {} y: {} snake: x: {} y: {}", i, k, p.x, p.y);
-                if i != p.x && k != p.y {
-                    free_coords.push(Point { x: i, y: k });
+                if x != p.x && y != p.y {
+                    free_coords.push(Point { x, y });
                 }
             }
-        });
-    });
-
+        }
+    }
 
     let point_idx = rng.gen_range(0..free_coords.len());
-    return free_coords.remove(point_idx);
+    return Food::new(free_coords.remove(point_idx));
 }
 
 impl Game {
@@ -62,10 +63,10 @@ impl Game {
         deque.push_back(Point { x: 2, y: 2 });
         deque.push_back(Point { x: 2, y: 3 });
         deque.push_back(Point { x: 2, y: 4 });
-        // (3..980).into_iter().for_each( |i| {
-        //     deque.push_back(Point { x: 2, y: i });
-        // });
-        let food_point = generate_food(&deque);
+        (5..10).into_iter().for_each(|i| {
+            deque.push_back(Point { x: 2, y: i });
+        });
+        let food = generate_food(&deque);
         Game {
             x_delta: 1.0,
             y_delta: 1.0,
@@ -73,7 +74,7 @@ impl Game {
             y: 1,
             direction: Direction::NONE,
             snake_coords: deque,
-            food_point,
+            food
         }
     }
 
@@ -105,13 +106,10 @@ impl Game {
             }
             self.snake_coords.push_front(Point { x: self.x, y: self.y });
             self.snake_coords.pop_back();
-
-            // println!("{}", upd.dt);
-            // println!("{}", self.snake_coords.len().to_string());
         }
 
-        if self.x == self.food_point.x && self.y == self.food_point.y {
-            self.food_point = generate_food(&self.snake_coords);
+        if self.x == self.food.coords.x && self.y == self.food.coords.y {
+            self.food = generate_food(&self.snake_coords);
             let last_idx = self.snake_coords.len() - 1;
             let last_item = self.snake_coords.get(last_idx).unwrap();
             self.snake_coords.push_back(Point { x: last_item.x, y: last_item.y })
@@ -119,39 +117,32 @@ impl Game {
     }
 
     fn on_draw(&mut self, ren: &RenderArgs, window: &mut PistonWindow, event: &Event) {
-        let window_dimensions = ren.draw_size;
-        let width = window_dimensions[0];
-        let height = window_dimensions[1];
+        window.draw_2d(event, |context, graphics, _device| {
+            clear([0.0, 0.0, 0.0, 1.0], graphics);
 
-        window.draw_2d(event, |c, g, _device| {
-            clear([0.0, 0.0, 0.0, 1.0], g);
-
-            let red = [1.0, 0.0, 0.0, 1.0];
             for point in &self.snake_coords {
-                // println!("LOOP {} {}", point.x, point.y);
-                let square = rectangle::square(0.0, 0.0, CELL_SIZE);
-                let center = c.transform.trans((point.x as f64) * CELL_SIZE, (point.y as f64) * CELL_SIZE);
-                rectangle(
-                    red,
-                    square,
-                    center,
-                    g,
+                Game::draw_square(
+                    context,
+                    graphics,
+                    SNAKE_COLOR,
+                    point.x * CELL_SIZE,
+                    point.y * CELL_SIZE,
                 );
             }
-            let green = [0.0, 1.0, 0.0, 1.0];
 
-            let square = rectangle::square(0.0, 0.0, CELL_SIZE);
-            let center = c.transform.trans(
-                (self.food_point.x as f64) * CELL_SIZE,
-                (self.food_point.y as f64) * CELL_SIZE,
-            );
-            rectangle(
-                green,
-                square,
-                center,
-                g,
-            );
+            self.food.draw(context, graphics);
         });
+    }
+
+    fn draw_square(context: Context, graphics: &mut G2d, color: [ColorComponent; 4], x: i32, y: i32) {
+        let square = rectangle::square(0.0, 0.0, CELL_SIZE as f64);
+        let center = context.transform.trans(x as f64, y as f64);
+        rectangle(
+            color,
+            square,
+            center,
+            graphics,
+        );
     }
 
     fn on_input(&mut self, inp: &Input) {
