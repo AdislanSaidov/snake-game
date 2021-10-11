@@ -21,7 +21,8 @@ pub struct Game {
     y: i32,
     direction: Direction,
     snake_coords: VecDeque<Point>,
-    food: Food
+    food: Food,
+    is_game_over: bool
 }
 
 fn generate_food(snake_coords: &VecDeque<Point>) -> Food {
@@ -59,7 +60,8 @@ impl Game {
             y: 1,
             direction: Direction::NONE,
             snake_coords: deque,
-            food
+            food,
+            is_game_over: false
         }
     }
 
@@ -89,7 +91,12 @@ impl Game {
             if old_x == self.x && old_y == self.y {
                 return;
             }
-            self.snake_coords.push_front(Point { x: self.x, y: self.y });
+            let point = Point { x: self.x, y: self.y };
+            if self.snake_coords.contains(&point) {
+                self.is_game_over = true;
+                self.direction = Direction::NONE;
+            }
+            self.snake_coords.push_front(point);
             self.snake_coords.pop_back();
         }
 
@@ -99,10 +106,15 @@ impl Game {
             let last_item = self.snake_coords.get(last_idx).unwrap();
             self.snake_coords.push_back(Point { x: last_item.x, y: last_item.y })
         }
+
     }
 
     pub fn on_draw(&mut self, ren: &RenderArgs, window: &mut PistonWindow, event: &Event) {
-        window.draw_2d(event, |context, graphics, _device| {
+        let assets = find_folder::Search::ParentsThenKids(3, 3)
+            .for_folder("assets").unwrap();
+        let mut glyphs = window.load_font(assets.join("FiraSans-Regular.ttf")).unwrap();
+
+        window.draw_2d(event, |context, graphics, device| {
             clear([0.0, 0.0, 0.0, 1.0], graphics);
 
             for point in &self.snake_coords {
@@ -116,6 +128,20 @@ impl Game {
             }
 
             self.food.draw(context, graphics);
+            let x = ren.window_size[0] / 2.;
+            let y = ren.window_size[1] / 2.;
+
+            if self.is_game_over {
+                let transform = context.transform.trans(x, y);
+
+                text::Text::new_color([0.0, 1.0, 0.0, 1.0], 32).draw(
+                    "GAME OVER!",
+                    &mut glyphs,
+                    &context.draw_state,
+                    transform, graphics
+                ).unwrap();
+                glyphs.factory.encoder.flush(device);
+            }
         });
     }
 

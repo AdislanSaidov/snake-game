@@ -4,6 +4,7 @@ mod direction;
 mod game;
 
 extern crate piston_window;
+extern crate find_folder;
 
 use std::collections::HashSet;
 use std::collections::VecDeque;
