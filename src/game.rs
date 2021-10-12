@@ -1,15 +1,14 @@
 extern crate piston_window;
 
-use std::collections::HashSet;
 use std::collections::VecDeque;
-use std::hash::{Hash, Hasher};
 
+use graphics::types::ColorComponent;
 use piston_window::*;
 use rand::Rng;
-use graphics::types::ColorComponent;
+
+use crate::direction::Direction;
 use crate::food::Food;
 use crate::point::Point;
-use crate::direction::Direction;
 
 const SNAKE_COLOR: [ColorComponent; 4] = [1.0, 0.0, 0.0, 1.0];
 pub const CELL_SIZE: i32 = 20;
@@ -31,10 +30,9 @@ fn generate_food(snake_coords: &VecDeque<Point>) -> Food {
     let mut free_coords: Vec<Point> = Vec::new();
     for x in 0..30 {
         for y in 0..30 {
-            for p in snake_coords {
-                if x != p.x && y != p.y {
-                    free_coords.push(Point { x, y });
-                }
+            let point = Point { x, y };
+            if !snake_coords.contains(&point) {
+                free_coords.push(point);
             }
         }
     }

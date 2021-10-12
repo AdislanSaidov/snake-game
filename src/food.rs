@@ -1,4 +1,4 @@
-use piston_window::{Context, Event, G2d, PistonWindow, RenderArgs};
+use piston_window::{Context, G2d};
 use piston_window::types::ColorComponent;
 
 use crate::Game;

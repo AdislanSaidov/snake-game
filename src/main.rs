@@ -1,22 +1,14 @@
+extern crate find_folder;
+extern crate piston_window;
+
+use piston_window::*;
+
+use crate::game::Game;
+
 mod food;
 mod point;
 mod direction;
 mod game;
-
-extern crate piston_window;
-extern crate find_folder;
-
-use std::collections::HashSet;
-use std::collections::VecDeque;
-use std::hash::{Hash, Hasher};
-
-use piston_window::*;
-use rand::Rng;
-use graphics::types::ColorComponent;
-use crate::food::Food;
-use crate::point::Point;
-use crate::direction::Direction;
-use crate::game::Game;
 
 const WINDOW_WIDTH: f64 = 600.0;
 const WINDOW_HEIGHT: f64 = 600.0;
