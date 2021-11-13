@@ -21,7 +21,8 @@ pub struct Game {
     direction: Direction,
     snake_coords: VecDeque<Point>,
     food: Food,
-    is_game_over: bool
+    is_game_over: bool,
+    should_restart_level: bool
 }
 
 fn generate_food(snake_coords: &VecDeque<Point>) -> Food {
@@ -59,12 +60,36 @@ impl Game {
             direction: Direction::NONE,
             snake_coords: deque,
             food,
-            is_game_over: false
+            is_game_over: false,
+            should_restart_level: false
         }
     }
 
     pub fn on_update(&mut self, upd: &UpdateArgs) {
+        if self.should_restart_level {
+            self.should_restart_level = false;
+            self.direction = Direction::NONE;
+            self.is_game_over = false;
+            self.x_delta = 1.0;
+            self.y_delta = 1.0;
+            self.x = 1;
+            self.y = 1;
+
+            let mut deque: VecDeque<Point> = VecDeque::new();
+            deque.push_back(Point { x: 2, y: 2 });
+            deque.push_back(Point { x: 2, y: 3 });
+            deque.push_back(Point { x: 2, y: 4 });
+            (5..10).into_iter().for_each(|i| {
+                deque.push_back(Point { x: 2, y: i });
+            });
+            let food = generate_food(&deque);
+            self.snake_coords = deque;
+            self.food = food;
+
+            return;
+        }
         let v = 5.0 * upd.dt;
+
         match self.direction {
             Direction::LEFT => {
                 self.x_delta -= v;
@@ -126,18 +151,24 @@ impl Game {
             }
 
             self.food.draw(context, graphics);
-            let x = ren.window_size[0] / 2.;
-            let y = ren.window_size[1] / 2.;
+
 
             if self.is_game_over {
+                let text = "GAME OVER!";
+                let text_width = glyphs.width(32, text).ok().unwrap();
+                let x = ren.window_size[0] / 2. - text_width / 2.;
+                let y = ren.window_size[1] / 2.;
+
                 let transform = context.transform.trans(x, y);
 
-                text::Text::new_color([0.0, 1.0, 0.0, 1.0], 32).draw(
-                    "GAME OVER!",
+                Text::new_color([0.0, 1.0, 0.0, 1.0], 32).draw(
+                    text,
                     &mut glyphs,
                     &context.draw_state,
-                    transform, graphics
+                    transform,
+                    graphics
                 ).unwrap();
+
                 glyphs.factory.encoder.flush(device);
             }
         });
@@ -179,6 +210,10 @@ impl Game {
     }
 
     fn change_direction(&mut self, new_direction: Direction, opposite_direction: Direction) {
+        if self.is_game_over {
+            self.should_restart_level = true;
+            return;
+        }
         if self.direction == opposite_direction {
             return;
         }
