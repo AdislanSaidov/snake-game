@@ -10,8 +10,11 @@ mod point;
 mod direction;
 mod game;
 
+static FONT_NAME: &str = "Hunger Games.ttf";
+
 const WINDOW_WIDTH: f64 = 600.0;
-const WINDOW_HEIGHT: f64 = 600.0;
+const WINDOW_HEIGHT: f64 = 640.0;
+const BOTTOM_BAR_HEIGHT: f64 = 40.0;
 
 
 fn main() {
@@ -20,7 +23,11 @@ fn main() {
         .resizable(false)
         .build()
         .unwrap();
-    let mut game = Game::new();
+    let assets = find_folder::Search::ParentsThenKids(3, 3)
+        .for_folder("assets").unwrap();
+    let mut glyphs = window.load_font(assets.join(FONT_NAME)).unwrap();
+
+    let mut game = Game::new(glyphs);
 
     while let Some(event) = window.next() {
         match event {

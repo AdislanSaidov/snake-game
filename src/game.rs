@@ -1,20 +1,21 @@
 extern crate piston_window;
 
 use std::collections::VecDeque;
+use std::ops::Index;
 
 use graphics::types::ColorComponent;
 use piston_window::*;
 use rand::Rng;
 
+use crate::BOTTOM_BAR_HEIGHT;
 use crate::direction::Direction;
 use crate::food::Food;
 use crate::point::Point;
-use std::ops::Index;
 
 const SNAKE_COLOR: [ColorComponent; 4] = [1.0, 0.0, 0.0, 1.0];
 pub const CELL_SIZE: i32 = 20;
-const END_CELL_IDX : i32 = 29;
-const START_CELL_IDX : i32 = 0;
+const END_CELL_IDX: i32 = 29;
+const START_CELL_IDX: i32 = 0;
 
 
 pub struct Game {
@@ -28,7 +29,8 @@ pub struct Game {
     is_game_over: bool,
     should_restart_level: bool,
     score: i32,
-    wall_coords: Vec<Point>
+    wall_coords: Vec<Point>,
+    glyphs: Glyphs,
 }
 
 fn generate_food(snake_coords: &VecDeque<Point>, wall_coords: &Vec<Point>) -> Food {
@@ -49,7 +51,8 @@ fn generate_food(snake_coords: &VecDeque<Point>, wall_coords: &Vec<Point>) -> Fo
 }
 
 fn create_walls() -> Vec<Point> {
-    return vec![(0,0)];
+    // return vec![(0,0)];
+    return vec![];
     // return vec![
     //     (0,0), (0,1), (0,2), (0,3), (0,4), (0,5), (0,6), (0,7), (0,8), (0,9),
     //     (0,10), (0,11), (0,12), (0,13), (0,14), (0,15), (0,16), (0,17), (0,18), (0,19),
@@ -78,7 +81,7 @@ fn create_snake() -> VecDeque<Point> {
 }
 
 impl Game {
-    pub fn new() -> Game {
+    pub fn new(glyphs: Glyphs) -> Game {
         let wall_coords: Vec<Point> = create_walls();
         let deque = create_snake();
         let food = generate_food(&deque, &wall_coords);
@@ -94,7 +97,8 @@ impl Game {
             is_game_over: false,
             should_restart_level: false,
             score: 0,
-            wall_coords
+            wall_coords,
+            glyphs,
         }
     }
 
@@ -109,7 +113,7 @@ impl Game {
             self.y = 15;
             self.score = 0;
 
-            let deque= create_snake();
+            let deque = create_snake();
             let food = generate_food(&deque, &self.wall_coords);
             self.snake_coords = deque;
             self.food = food;
@@ -157,7 +161,6 @@ impl Game {
 
             self.snake_coords.push_front(point);
             self.snake_coords.pop_back();
-
         }
         let (food_x, food_y) = self.food.coords;
         if self.x == food_x && self.y == food_y {
@@ -165,9 +168,8 @@ impl Game {
             self.food = generate_food(&self.snake_coords, &self.wall_coords);
             let last_idx = self.snake_coords.len() - 1;
             let last_item = self.snake_coords.get(last_idx).unwrap();
-            self.snake_coords.push_back((last_item.0, last_item.1 ))
+            self.snake_coords.push_back((last_item.0, last_item.1))
         }
-
     }
 
     fn handle_collisions(&mut self, point: &Point) -> bool {
@@ -176,7 +178,7 @@ impl Game {
             self.direction = Direction::NONE;
             return true;
         }
-        return false
+        return false;
     }
 
     fn handle_off_screen_movement(&mut self) {
@@ -198,10 +200,6 @@ impl Game {
     }
 
     pub fn on_draw(&mut self, ren: &RenderArgs, window: &mut PistonWindow, event: &Event) {
-        let assets = find_folder::Search::ParentsThenKids(3, 3)
-            .for_folder("assets").unwrap();
-        let mut glyphs = window.load_font(assets.join("FiraSans-Regular.ttf")).unwrap();
-
         window.draw_2d(event, |context, graphics, device| {
             clear([0.0, 0.0, 0.0, 1.0], graphics);
 
@@ -219,7 +217,7 @@ impl Game {
                 Game::draw_square(
                     context,
                     graphics,
-                    [0.0, 0.5, 0.9, 1.0],
+                    [0.1, 0.1, 0.1, 1.0],
                     x * CELL_SIZE,
                     y * CELL_SIZE,
                 );
@@ -227,25 +225,52 @@ impl Game {
 
             self.food.draw(context, graphics);
 
+            let window_width = ren.window_size[0];
+            let window_height = ren.window_size[1];
 
             if self.is_game_over {
                 let text = "GAME OVER!";
-                let text_width = glyphs.width(32, text).ok().unwrap();
-                let x = ren.window_size[0] / 2. - text_width / 2.;
-                let y = ren.window_size[1] / 2.;
+                let font_size = 24;
+                let text_width = self.glyphs.width(font_size, text).ok().unwrap();
+                let x = window_width / 2. - text_width / 2.;
+                let y = window_height / 2.;
 
                 let transform = context.transform.trans(x, y);
 
-                Text::new_color([0.0, 1.0, 0.0, 1.0], 32).draw(
+                Text::new_color([0.0, 1.0, 0.0, 1.0], font_size).draw(
                     text,
-                    &mut glyphs,
+                    &mut self.glyphs,
                     &context.draw_state,
                     transform,
-                    graphics
+                    graphics,
                 ).unwrap();
-
-                glyphs.factory.encoder.flush(device);
             }
+
+
+            let rect = [0.0, 0.0, window_width, BOTTOM_BAR_HEIGHT];
+            let center = context.transform.trans(0 as f64, window_height - BOTTOM_BAR_HEIGHT);
+            rectangle(
+                // [0.9, 0.7, 0.7, 1.0],
+                // [0.7, 0.95, 0.95, 1.0],
+                [0.05, 0.05, 0.05, 1.0],
+                rect,
+                center,
+                graphics,
+            );
+
+            let score_font_size = 15;
+
+            let transform = context.transform.trans(10.0, window_height - ((BOTTOM_BAR_HEIGHT - 14.0) / 2.0));
+
+            Text::new_color([1.0, 0.0, 0.0, 1.0], score_font_size).draw(
+                format!("SCORE: {}", self.score).as_str(),
+                &mut self.glyphs,
+                &context.draw_state,
+                transform,
+                graphics,
+            ).unwrap();
+
+            self.glyphs.factory.encoder.flush(device);
         });
     }
 
