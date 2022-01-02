@@ -9,9 +9,13 @@ use rand::Rng;
 use crate::direction::Direction;
 use crate::food::Food;
 use crate::point::Point;
+use std::ops::Index;
 
 const SNAKE_COLOR: [ColorComponent; 4] = [1.0, 0.0, 0.0, 1.0];
 pub const CELL_SIZE: i32 = 20;
+const END_CELL_IDX : i32 = 29;
+const START_CELL_IDX : i32 = 0;
+
 
 pub struct Game {
     x_delta: f64,
@@ -22,17 +26,19 @@ pub struct Game {
     snake_coords: VecDeque<Point>,
     food: Food,
     is_game_over: bool,
-    should_restart_level: bool
+    should_restart_level: bool,
+    score: i32,
+    wall_coords: Vec<Point>
 }
 
-fn generate_food(snake_coords: &VecDeque<Point>) -> Food {
+fn generate_food(snake_coords: &VecDeque<Point>, wall_coords: &Vec<Point>) -> Food {
     let mut rng = rand::thread_rng();
 
     let mut free_coords: Vec<Point> = Vec::new();
     for x in 0..30 {
         for y in 0..30 {
-            let point = Point { x, y };
-            if !snake_coords.contains(&point) {
+            let point = (x, y);
+            if !snake_coords.contains(&point) && !wall_coords.contains(&point) {
                 free_coords.push(point);
             }
         }
@@ -42,26 +48,53 @@ fn generate_food(snake_coords: &VecDeque<Point>) -> Food {
     return Food::new(free_coords.remove(point_idx));
 }
 
+fn create_walls() -> Vec<Point> {
+    return vec![(0,0)];
+    // return vec![
+    //     (0,0), (0,1), (0,2), (0,3), (0,4), (0,5), (0,6), (0,7), (0,8), (0,9),
+    //     (0,10), (0,11), (0,12), (0,13), (0,14), (0,15), (0,16), (0,17), (0,18), (0,19),
+    //     (0,20), (0,21), (0,22), (0,23), (0,24), (0,25), (0,26), (0,27), (0,28), (0,29),
+    //
+    //     (1,0), (2,0), (3,0), (4,0), (5,0), (6,0), (7,0), (8,0), (9,0), (10,0),
+    //     (11,0), (12,0), (13,0), (14,0), (15,0), (16,0), (17,0), (18,0), (19,0), (20,0),
+    //     (21,0), (22,0), (23,0), (24,0), (25,0), (26,0), (27,0), (28,0), (29,0),
+    //
+    //     (1,29), (2,29), (3,29), (4,29), (5,29), (6,29), (7,29), (8,29), (9,29), (10,29),
+    //     (11,29), (12,29), (13,29), (14,29), (15,29), (16,29), (17,29), (18,29), (19,29), (20,29),
+    //     (21,29), (22,29), (23,29), (24,29), (25,29), (26,29), (27,29), (28,29), (29,29),
+    //
+    //     (29,1), (29,2), (29,3), (29,4), (29,5), (29,6), (29,7), (29,8), (29,9),
+    //     (29,10), (29,11), (29,12), (29,13), (29,14), (29,15), (29,16), (29,17), (29,18), (29,19),
+    //     (29,20), (29,21), (29,22), (29,23), (29,24), (29,25), (29,26), (29,27), (29,28)
+    // ];
+}
+
+fn create_snake() -> VecDeque<Point> {
+    let mut deque: VecDeque<Point> = VecDeque::new();
+    (15..18).into_iter().for_each(|i| {
+        deque.push_back((15, i));
+    });
+    return deque;
+}
+
 impl Game {
     pub fn new() -> Game {
-        let mut deque: VecDeque<Point> = VecDeque::new();
-        deque.push_back(Point { x: 2, y: 2 });
-        deque.push_back(Point { x: 2, y: 3 });
-        deque.push_back(Point { x: 2, y: 4 });
-        (5..10).into_iter().for_each(|i| {
-            deque.push_back(Point { x: 2, y: i });
-        });
-        let food = generate_food(&deque);
+        let wall_coords: Vec<Point> = create_walls();
+        let deque = create_snake();
+        let food = generate_food(&deque, &wall_coords);
+
         Game {
-            x_delta: 1.0,
-            y_delta: 1.0,
-            x: 1,
-            y: 1,
+            x_delta: 15.0,
+            y_delta: 15.0,
+            x: 15,
+            y: 15,
             direction: Direction::NONE,
             snake_coords: deque,
             food,
             is_game_over: false,
-            should_restart_level: false
+            should_restart_level: false,
+            score: 0,
+            wall_coords
         }
     }
 
@@ -70,24 +103,20 @@ impl Game {
             self.should_restart_level = false;
             self.direction = Direction::NONE;
             self.is_game_over = false;
-            self.x_delta = 1.0;
-            self.y_delta = 1.0;
-            self.x = 1;
-            self.y = 1;
+            self.x_delta = 15.0;
+            self.y_delta = 15.0;
+            self.x = 15;
+            self.y = 15;
+            self.score = 0;
 
-            let mut deque: VecDeque<Point> = VecDeque::new();
-            deque.push_back(Point { x: 2, y: 2 });
-            deque.push_back(Point { x: 2, y: 3 });
-            deque.push_back(Point { x: 2, y: 4 });
-            (5..10).into_iter().for_each(|i| {
-                deque.push_back(Point { x: 2, y: i });
-            });
-            let food = generate_food(&deque);
+            let deque= create_snake();
+            let food = generate_food(&deque, &self.wall_coords);
             self.snake_coords = deque;
             self.food = food;
 
             return;
         }
+        // 5 cells per second
         let v = 5.0 * upd.dt;
 
         match self.direction {
@@ -114,22 +143,58 @@ impl Game {
             if old_x == self.x && old_y == self.y {
                 return;
             }
-            let point = Point { x: self.x, y: self.y };
-            if self.snake_coords.contains(&point) {
-                self.is_game_over = true;
-                self.direction = Direction::NONE;
+
+            self.handle_off_screen_movement();
+
+            let point = (self.x, self.y);
+            println!("{} {}", point.0, point.1);
+
+            let has_collisions = self.handle_collisions(&point);
+
+            if has_collisions {
+                return;
             }
+
             self.snake_coords.push_front(point);
             self.snake_coords.pop_back();
-        }
 
-        if self.x == self.food.coords.x && self.y == self.food.coords.y {
-            self.food = generate_food(&self.snake_coords);
+        }
+        let (food_x, food_y) = self.food.coords;
+        if self.x == food_x && self.y == food_y {
+            self.score += 1;
+            self.food = generate_food(&self.snake_coords, &self.wall_coords);
             let last_idx = self.snake_coords.len() - 1;
             let last_item = self.snake_coords.get(last_idx).unwrap();
-            self.snake_coords.push_back(Point { x: last_item.x, y: last_item.y })
+            self.snake_coords.push_back((last_item.0, last_item.1 ))
         }
 
+    }
+
+    fn handle_collisions(&mut self, point: &Point) -> bool {
+        if self.snake_coords.contains(&point) || self.wall_coords.contains(&point) {
+            self.is_game_over = true;
+            self.direction = Direction::NONE;
+            return true;
+        }
+        return false
+    }
+
+    fn handle_off_screen_movement(&mut self) {
+        if self.x < START_CELL_IDX {
+            self.x = END_CELL_IDX;
+            self.x_delta = END_CELL_IDX as f64;
+        } else if self.x > END_CELL_IDX {
+            self.x = START_CELL_IDX;
+            self.x_delta = START_CELL_IDX as f64;
+        }
+
+        if self.y < START_CELL_IDX {
+            self.y = END_CELL_IDX;
+            self.y_delta = END_CELL_IDX as f64;
+        } else if self.y > END_CELL_IDX {
+            self.y = START_CELL_IDX;
+            self.y_delta = START_CELL_IDX as f64;
+        }
     }
 
     pub fn on_draw(&mut self, ren: &RenderArgs, window: &mut PistonWindow, event: &Event) {
@@ -140,13 +205,23 @@ impl Game {
         window.draw_2d(event, |context, graphics, device| {
             clear([0.0, 0.0, 0.0, 1.0], graphics);
 
-            for point in &self.snake_coords {
+            for (x, y) in &self.snake_coords {
                 Game::draw_square(
                     context,
                     graphics,
                     SNAKE_COLOR,
-                    point.x * CELL_SIZE,
-                    point.y * CELL_SIZE,
+                    x * CELL_SIZE,
+                    y * CELL_SIZE,
+                );
+            }
+
+            for (x, y) in &self.wall_coords {
+                Game::draw_square(
+                    context,
+                    graphics,
+                    [0.0, 0.5, 0.9, 1.0],
+                    x * CELL_SIZE,
+                    y * CELL_SIZE,
                 );
             }
 
@@ -187,8 +262,8 @@ impl Game {
 
     pub fn on_input(&mut self, inp: &Input) {
         match inp {
-            Input::Button(but) => match but.state {
-                ButtonState::Press => match but.button {
+            Input::Button(button_args) => match button_args.state {
+                ButtonState::Press => match button_args.button {
                     Button::Keyboard(Key::Up) => {
                         self.change_direction(Direction::TOP, Direction::BOTTOM);
                     }

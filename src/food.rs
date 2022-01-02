@@ -17,12 +17,13 @@ impl Food {
     }
 
     pub fn draw(&self, context: Context, graphics: &mut G2d,) {
+        let (x, y) = self.coords;
         Game::draw_square(
             context,
             graphics,
             FOOD_COLOR,
-            self.coords.x * CELL_SIZE,
-            self.coords.y * CELL_SIZE,
+            x * CELL_SIZE,
+            y * CELL_SIZE,
         );
     }
 }
