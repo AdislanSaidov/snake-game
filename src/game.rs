@@ -11,8 +11,9 @@ use crate::BOTTOM_BAR_HEIGHT;
 use crate::direction::Direction;
 use crate::food::Food;
 use crate::point::Point;
+use graphics::ellipse::circle;
 
-const SNAKE_COLOR: [ColorComponent; 4] = [1.0, 0.0, 0.0, 1.0];
+const SNAKE_COLOR: [ColorComponent; 4] = [0.0, 0.0, 0.0, 1.0];
 pub const CELL_SIZE: i32 = 20;
 const END_CELL_IDX: i32 = 29;
 const START_CELL_IDX: i32 = 0;
@@ -52,24 +53,23 @@ fn generate_food(snake_coords: &VecDeque<Point>, wall_coords: &Vec<Point>) -> Fo
 
 fn create_walls() -> Vec<Point> {
     // return vec![(0,0)];
-    return vec![];
-    // return vec![
-    //     (0,0), (0,1), (0,2), (0,3), (0,4), (0,5), (0,6), (0,7), (0,8), (0,9),
-    //     (0,10), (0,11), (0,12), (0,13), (0,14), (0,15), (0,16), (0,17), (0,18), (0,19),
-    //     (0,20), (0,21), (0,22), (0,23), (0,24), (0,25), (0,26), (0,27), (0,28), (0,29),
-    //
-    //     (1,0), (2,0), (3,0), (4,0), (5,0), (6,0), (7,0), (8,0), (9,0), (10,0),
-    //     (11,0), (12,0), (13,0), (14,0), (15,0), (16,0), (17,0), (18,0), (19,0), (20,0),
-    //     (21,0), (22,0), (23,0), (24,0), (25,0), (26,0), (27,0), (28,0), (29,0),
-    //
-    //     (1,29), (2,29), (3,29), (4,29), (5,29), (6,29), (7,29), (8,29), (9,29), (10,29),
-    //     (11,29), (12,29), (13,29), (14,29), (15,29), (16,29), (17,29), (18,29), (19,29), (20,29),
-    //     (21,29), (22,29), (23,29), (24,29), (25,29), (26,29), (27,29), (28,29), (29,29),
-    //
-    //     (29,1), (29,2), (29,3), (29,4), (29,5), (29,6), (29,7), (29,8), (29,9),
-    //     (29,10), (29,11), (29,12), (29,13), (29,14), (29,15), (29,16), (29,17), (29,18), (29,19),
-    //     (29,20), (29,21), (29,22), (29,23), (29,24), (29,25), (29,26), (29,27), (29,28)
-    // ];
+    // return vec![];
+    return vec![
+        (0, 0), (0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6), (0, 7), (0, 8), (0, 9),
+        (0, 10), (0, 11), (0, 12), (0, 13), (0, 14), (0, 15), (0, 16), (0, 17), (0, 18), (0, 19),
+        (0, 20), (0, 21), (0, 22), (0, 23), (0, 24), (0, 25), (0, 26), (0, 27), (0, 28), (0, 29),
+        (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (8, 0), (9, 0), (10, 0),
+        (11, 0), (12, 0), (13, 0), (14, 0), (15, 0), (16, 0), (17, 0), (18, 0), (19, 0), (20, 0),
+        (21, 0), (22, 0), (23, 0), (24, 0), (25, 0), (26, 0), (27, 0), (28, 0), (29, 0),
+        (1, 29), (2, 29), (3, 29), (4, 29), (5, 29), (6, 29), (7, 29), (8, 29), (9, 29), (10, 29),
+        (11, 29), (12, 29), (13, 29), (14, 29), (15, 29), (16, 29), (17, 29), (18, 29), (19, 29), (20, 29),
+        (21, 29), (22, 29), (23, 29), (24, 29), (25, 29), (26, 29), (27, 29), (28, 29), (29, 29),
+        (29, 1), (29, 2), (29, 3), (29, 4), (29, 5), (29, 6), (29, 7), (29, 8), (29, 9),
+        (29, 10), (29, 11), (29, 12), (29, 13), (29, 14), (29, 15), (29, 16), (29, 17), (29, 18), (29, 19),
+        (29, 20), (29, 21), (29, 22), (29, 23), (29, 24), (29, 25), (29, 26), (29, 27), (29, 28),
+
+        // (15,15), (16,15), (16,16), (14,14),(14,15),(14,16),(15,14),(15,16)
+    ];
 }
 
 fn create_snake() -> VecDeque<Point> {
@@ -203,6 +203,19 @@ impl Game {
         window.draw_2d(event, |context, graphics, device| {
             clear([0.0, 0.0, 0.0, 1.0], graphics);
 
+            for (x, y) in &self.wall_coords {
+                Game::draw_square(
+                    context,
+                    graphics,
+                    [0.67, 0.65, 0.6, 1.0],
+                    // [0.1, 0.1, 0.1, 1.0],
+                    x * CELL_SIZE,
+                    y * CELL_SIZE,
+                    CELL_SIZE,
+                    Option::Some([0.5, 0.5, 0.4, 1.0]),
+                );
+            }
+
             for (x, y) in &self.snake_coords {
                 Game::draw_square(
                     context,
@@ -210,18 +223,22 @@ impl Game {
                     SNAKE_COLOR,
                     x * CELL_SIZE,
                     y * CELL_SIZE,
+                    CELL_SIZE,
+                    Option::Some([0.9, 0.0, 0.0, 1.0]),
                 );
             }
+            let (head_x, head_y) = self.snake_coords[0];
 
-            for (x, y) in &self.wall_coords {
-                Game::draw_square(
-                    context,
-                    graphics,
-                    [0.1, 0.1, 0.1, 1.0],
-                    x * CELL_SIZE,
-                    y * CELL_SIZE,
-                );
-            }
+            Game::draw_square(
+                context,
+                graphics,
+                [1.0, 0.0, 0.0, 1.0],
+                head_x * CELL_SIZE + 6,
+                head_y * CELL_SIZE + 6,
+                CELL_SIZE - 12,
+                Option::None
+            );
+
 
             self.food.draw(context, graphics);
 
@@ -248,13 +265,13 @@ impl Game {
 
 
             let rect = [0.0, 0.0, window_width, BOTTOM_BAR_HEIGHT];
-            let center = context.transform.trans(0 as f64, window_height - BOTTOM_BAR_HEIGHT);
+            let transform = context.transform.trans(0.0, window_height - BOTTOM_BAR_HEIGHT);
             rectangle(
                 // [0.9, 0.7, 0.7, 1.0],
                 // [0.7, 0.95, 0.95, 1.0],
                 [0.05, 0.05, 0.05, 1.0],
                 rect,
-                center,
+                transform,
                 graphics,
             );
 
@@ -274,15 +291,33 @@ impl Game {
         });
     }
 
-    pub fn draw_square(context: Context, graphics: &mut G2d, color: [ColorComponent; 4], x: i32, y: i32) {
-        let square = rectangle::square(0.0, 0.0, CELL_SIZE as f64);
-        let center = context.transform.trans(x as f64, y as f64);
+    pub fn draw_square(
+        context: Context,
+        graphics: &mut G2d,
+        color: [ColorComponent; 4],
+        x: i32,
+        y: i32,
+        size: i32,
+        stroke_color: Option<[ColorComponent; 4]>
+    ) {
+        let square = rectangle::square(0.0, 0.0, size as f64);
+        let transform = context.transform.trans(x as f64, y as f64);
         rectangle(
             color,
             square,
-            center,
+            transform,
             graphics,
         );
+        match stroke_color {
+            Option::Some(color) => {
+                let line_radius = 0.4;
+                line(color, line_radius, [0.0, 0.0, 0.0, size as f64], transform, graphics);
+                line(color, line_radius, [0.0, 0.0, size as f64, 0.0], transform, graphics);
+                line(color, line_radius, [size as f64, 0.0, size as f64, size as f64], transform, graphics);
+                line(color, line_radius, [0.0, size as f64, size as f64, size as f64], transform, graphics);
+            }
+            Option::None => {}
+        }
     }
 
     pub fn on_input(&mut self, inp: &Input) {
