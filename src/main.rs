@@ -9,12 +9,15 @@ mod food;
 mod point;
 mod direction;
 mod game;
+mod snake;
+mod wall;
+mod draw_utils;
+mod bottom_bar;
 
 static FONT_NAME: &str = "Hunger Games.ttf";
 
 const WINDOW_WIDTH: f64 = 600.0;
 const WINDOW_HEIGHT: f64 = 640.0;
-const BOTTOM_BAR_HEIGHT: f64 = 40.0;
 
 
 fn main() {
@@ -25,14 +28,14 @@ fn main() {
         .unwrap();
     let assets = find_folder::Search::ParentsThenKids(3, 3)
         .for_folder("assets").unwrap();
-    let mut glyphs = window.load_font(assets.join(FONT_NAME)).unwrap();
+    let glyphs = window.load_font(assets.join(FONT_NAME)).unwrap();
 
     let mut game = Game::new(glyphs);
 
     while let Some(event) = window.next() {
         match event {
             Event::Loop(Loop::Update(ref upd)) => game.on_update(upd),
-            Event::Loop(Loop::Render(ref ren)) => game.on_draw(ren, &mut window, &event),
+            Event::Loop(Loop::Render(_)) => game.on_draw(&mut window, &event),
             Event::Input(ref inp, _) => game.on_input(inp),
             _ => {}
         }
