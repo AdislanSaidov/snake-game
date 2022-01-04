@@ -145,19 +145,14 @@ impl Snake {
                     return false;
                 }
             }
-            Direction::NONE => {}
         }
 
-        if self.direction != Direction::NONE {
+        self.handle_off_screen_movement();
 
-            self.handle_off_screen_movement();
-
-            if self.collides_with_walls_or_himself(&walls) {
-                self.direction = Direction::NONE;
-                return true;
-            }
-            self.move_one_step();
+        if self.collides_with_walls_or_himself(&walls) {
+            return true;
         }
+        self.move_one_step();
 
         return false;
     }

@@ -5,5 +5,4 @@ pub enum Direction {
     RIGHT,
     TOP,
     BOTTOM,
-    NONE,
 }

@@ -13,6 +13,7 @@ mod snake;
 mod wall;
 mod draw_utils;
 mod bottom_bar;
+mod state;
 
 static FONT_NAME: &str = "Hunger Games.ttf";
 
