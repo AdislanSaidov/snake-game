@@ -4,7 +4,7 @@ use piston_window::{Context, G2d};
 
 use crate::direction::Direction;
 use crate::food::Food;
-use crate::game::{CELL_SIZE, END_CELL_IDX, SNAKE_COLOR, START_CELL_IDX};
+use crate::game::{CELL_SIZE, END_CELL_IDX, START_CELL_IDX};
 use crate::point::Point;
 use crate::map::Map;
 use crate::draw_utils::draw_square;
@@ -55,7 +55,7 @@ impl Snake {
         draw_square(
             context,
             graphics,
-            [1.0, 0.0, 0.0, 1.0],
+            self.stroke_color,
             head_x * CELL_SIZE + 6,
             head_y * CELL_SIZE + 6,
             CELL_SIZE - 12,

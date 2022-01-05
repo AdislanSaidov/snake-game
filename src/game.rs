@@ -1,24 +1,18 @@
 extern crate piston_window;
 
-use std::collections::VecDeque;
-
-use graphics::types::ColorComponent;
 use piston_window::*;
-use rand::Rng;
 
-use crate::bottom_bar::{draw_bottom_bar, BOTTOM_BAR_HEIGHT};
+use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
+use crate::bottom_bar::{BOTTOM_BAR_HEIGHT, draw_bottom_bar};
 use crate::direction::Direction;
 use crate::food::Food;
-use crate::point::Point;
-use crate::snake::Snake;
-use crate::map::Map;
-use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
-use crate::state::State;
 use crate::game_button::GameButton;
+use crate::map::Map;
 use crate::resources::{create_stuff, generate_food};
+use crate::snake::Snake;
 use crate::snake_config::SnakeConfig;
+use crate::state::State;
 
-pub const SNAKE_COLOR: [ColorComponent; 4] = [0.0, 0.0, 0.0, 1.0];
 pub const CELL_SIZE: i32 = 20;
 pub const END_CELL_IDX: i32 = 29;
 pub const START_CELL_IDX: i32 = 0;
@@ -56,11 +50,7 @@ impl Game {
             "New game".to_string(),
             [1.0, 0.0, 0.0, 1.0],
             8,
-            [0.0, 0.0, 0.0, 1.0],
-            || {
-
-                println!("CLICK");
-            }
+            [0.0, 0.0, 0.0, 1.0]
         );
 
         Game {
@@ -77,9 +67,16 @@ impl Game {
         }
     }
 
-    fn new_game(&mut self) {
-        let (snake, map, food) = create_stuff();
 
+
+    fn new_game(&mut self) {
+        self.state = State::NotStarted;
+        let (snake, map, food) = create_stuff();
+        self.snake_config = SnakeConfig::from_snake(&snake);
+        self.snake = snake;
+        self.walls = map;
+        self.food = food;
+        self.score = 0;
     }
 
     pub fn on_update(&mut self, upd: &UpdateArgs) {
@@ -159,7 +156,7 @@ impl Game {
         self.last_mouse_pos = Option::Some(pos);
     }
 
-    pub fn on_input(&mut self, inp: &Input, event: &Event) {
+    pub fn on_input(&mut self, inp: &Input) {
         match inp {
             Input::Button(button_args) => match button_args.state {
                 ButtonState::Press => {
@@ -199,7 +196,9 @@ impl Game {
                         Button::Mouse(MouseButton::Left) => {
                             self.last_mouse_pos.map(|pos|{
                                 let (x, y) = (pos[0], pos[1]);
-                                self.button.on_click_event(x, y)
+                                if self.button.is_clicked(x, y) {
+                                    self.new_game();
+                                }
                             });
 
                         }

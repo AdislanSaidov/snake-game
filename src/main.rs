@@ -18,6 +18,7 @@ mod state;
 mod game_button;
 mod resources;
 mod snake_config;
+mod maps;
 
 static FONT_NAME: &str = "Hunger Games.ttf";
 
@@ -44,7 +45,7 @@ fn main() {
         match event {
             Event::Loop(Loop::Update(ref upd)) => game.on_update(upd),
             Event::Loop(Loop::Render(_)) => game.on_draw(&mut window, &event),
-            Event::Input(ref inp, _) => game.on_input(inp, &event),
+            Event::Input(ref inp, _) => game.on_input(inp),
             _ => {}
         }
     }

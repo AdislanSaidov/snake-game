@@ -1,13 +1,8 @@
 use std::collections::VecDeque;
 
-use piston_window::{Context, G2d};
 
 use crate::direction::Direction;
-use crate::food::Food;
-use crate::game::{CELL_SIZE, END_CELL_IDX, SNAKE_COLOR, START_CELL_IDX};
 use crate::point::Point;
-use crate::map::Map;
-use crate::draw_utils::draw_square;
 use graphics::types::ColorComponent;
 use crate::snake::Snake;
 

@@ -1,13 +1,11 @@
+use graphics::{CharacterCache, Text};
+use graphics::types::FontSize;
 use piston_window::{Context, G2d, Glyphs};
+use piston_window::*;
 use piston_window::types::ColorComponent;
 
-use piston_window::*;
-use crate::game::CELL_SIZE;
+use crate::draw_utils::{draw_rect};
 use crate::point::Point;
-use crate::draw_utils::{draw_square, draw_rect};
-use graphics::{Text, CharacterCache};
-use graphics::types::FontSize;
-
 
 pub struct GameButton {
     coords: Point,
@@ -16,8 +14,7 @@ pub struct GameButton {
     text: String,
     text_color: [ColorComponent; 4],
     font_size: FontSize,
-    background_color: [ColorComponent; 4],
-    click_listener: Box<dyn FnMut()>,
+    background_color: [ColorComponent; 4]
 }
 
 impl GameButton {
@@ -28,8 +25,7 @@ impl GameButton {
         text: String,
         text_color: [ColorComponent; 4],
         font_size: FontSize,
-        background_color: [ColorComponent; 4],
-        click_listener: impl FnMut() + 'static,
+        background_color: [ColorComponent; 4]
     ) -> GameButton {
         GameButton {
             coords,
@@ -38,8 +34,7 @@ impl GameButton {
             text,
             text_color,
             font_size,
-            background_color,
-            click_listener: Box::new(click_listener),
+            background_color
         }
     }
 
@@ -64,7 +59,7 @@ impl GameButton {
         let free_space_width_in_button = button_width - text_width;
         let horizontal_margin = free_space_width_in_button / 2.0;
 
-        let free_space_height_in_button = (button_height - self.font_size as f64);
+        let free_space_height_in_button = button_height - self.font_size as f64;
         let vertical_margin = free_space_height_in_button / 2.0;
 
         let text_start_x = button_start_x + horizontal_margin;
@@ -80,7 +75,7 @@ impl GameButton {
         ).unwrap();
     }
 
-    pub fn on_click_event(&mut self, x: f64, y: f64) {
+    pub fn is_clicked(&self, x: f64, y: f64) -> bool {
         let button_start_x = self.coords.0 as f64;
         let button_start_y = self.coords.1 as f64;
         let button_width = self.width as f64;
@@ -88,13 +83,9 @@ impl GameButton {
         let button_end_x = button_start_x + button_width;
         let button_end_y = button_start_y + button_height;
 
-        let is_point_in_button = x >= button_start_x &&
+        return  x >= button_start_x &&
             x <= button_end_x &&
             y >= button_start_y &&
             y <= button_end_y;
-
-        if is_point_in_button {
-            (self.click_listener)()
-        }
     }
 }
