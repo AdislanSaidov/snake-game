@@ -28,13 +28,12 @@ pub struct Game {
     state: State,
     button: GameButton,
     last_mouse_pos: Option<[f64; 2]>,
-    snake_config: SnakeConfig
+    snake_config: SnakeConfig,
 }
 
 
 impl Game {
     pub fn new(glyphs: Glyphs, snake: Snake, map: Map, food: Food) -> Self {
-
         let snake_config = SnakeConfig::from_snake(&snake);
 
         let button_height = 32;
@@ -50,7 +49,7 @@ impl Game {
             "New game".to_string(),
             [1.0, 0.0, 0.0, 1.0],
             8,
-            [0.0, 0.0, 0.0, 1.0]
+            [0.0, 0.0, 0.0, 1.0],
         );
 
         Game {
@@ -63,10 +62,9 @@ impl Game {
             state: State::NotStarted,
             button,
             last_mouse_pos: Option::None,
-            snake_config
+            snake_config,
         }
     }
-
 
 
     fn new_game(&mut self) {
@@ -152,7 +150,7 @@ impl Game {
         ).unwrap_or_else(|err| println!("{:?}", err));
     }
 
-    pub fn on_mouse_input(&mut self, pos: [f64; 2]){
+    pub fn on_mouse_input(&mut self, pos: [f64; 2]) {
         self.last_mouse_pos = Option::Some(pos);
     }
 
@@ -169,7 +167,7 @@ impl Game {
                             }
                         }
                     }
-                
+
                     match button_args.button {
                         Button::Keyboard(Key::Up) => {
                             self.verify_moving();
@@ -194,13 +192,12 @@ impl Game {
                             self.handle_pause()
                         }
                         Button::Mouse(MouseButton::Left) => {
-                            self.last_mouse_pos.map(|pos|{
+                            self.last_mouse_pos.map(|pos| {
                                 let (x, y) = (pos[0], pos[1]);
                                 if self.button.is_clicked(x, y) {
                                     self.new_game();
                                 }
                             });
-
                         }
                         _ => (),
                     }
@@ -222,12 +219,9 @@ impl Game {
         }
     }
 
-    fn verify_moving(&mut self){
+    fn verify_moving(&mut self) {
         if self.state == State::NotStarted || self.state == State::Paused {
             self.state = State::Playing
         }
     }
-
-
-
 }

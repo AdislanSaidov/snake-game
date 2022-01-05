@@ -12,7 +12,7 @@ pub fn draw_square(
     x: i32,
     y: i32,
     size: i32,
-    stroke_color: Option<[ColorComponent; 4]>
+    stroke_color: Option<[ColorComponent; 4]>,
 ) {
     draw_rect(context, graphics, color, (x, y), size, size, stroke_color);
 }
@@ -24,7 +24,7 @@ pub fn draw_rect(
     point: Point,
     width: i32,
     height: i32,
-    stroke_color: Option<[ColorComponent; 4]>
+    stroke_color: Option<[ColorComponent; 4]>,
 ) {
     let new_width = width as f64;
     let new_height = height as f64;
@@ -46,6 +46,4 @@ pub fn draw_rect(
         }
         Option::None => {}
     }
-
-
 }

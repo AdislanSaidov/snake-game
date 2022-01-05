@@ -1,10 +1,11 @@
-use crate::snake::Snake;
 use std::collections::VecDeque;
-use crate::point::Point;
-use crate::direction::Direction;
-use crate::resources::{take_random_colors, snake_colors};
 
-pub fn map1() -> Vec<(i32, i32)>{
+use crate::direction::Direction;
+use crate::point::Point;
+use crate::resources::{snake_colors, take_random_colors};
+use crate::snake::Snake;
+
+pub fn map1() -> Vec<(i32, i32)> {
     return vec![
         (0, 0), (0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6), (0, 7), (0, 8), (0, 9),
         (0, 10), (0, 11), (0, 12), (0, 13), (0, 14), (0, 15), (0, 16), (0, 17), (0, 18), (0, 19),
@@ -21,7 +22,7 @@ pub fn map1() -> Vec<(i32, i32)>{
     ];
 }
 
-pub fn map_and_snake1() -> (Vec<(i32, i32)>, Snake){
+pub fn map_and_snake1() -> (Vec<(i32, i32)>, Snake) {
     let walls = map1();
     let mut deque: VecDeque<Point> = VecDeque::new();
     deque.push_back((15, 15));
@@ -34,7 +35,7 @@ pub fn map_and_snake1() -> (Vec<(i32, i32)>, Snake){
     return (walls, snake);
 }
 
-pub fn map_and_snake2() -> (Vec<(i32, i32)>, Snake){
+pub fn map_and_snake2() -> (Vec<(i32, i32)>, Snake) {
     let walls = vec![];
     let mut deque: VecDeque<Point> = VecDeque::new();
     deque.push_back((15, 15));

@@ -1,9 +1,9 @@
+use graphics::types::ColorComponent;
 use piston_window::{Context, G2d};
 
+use crate::draw_utils::draw_square;
 use crate::game::CELL_SIZE;
 use crate::point::Point;
-use crate::draw_utils::draw_square;
-use graphics::types::ColorComponent;
 
 pub struct Map {
     pub coords: Vec<Point>,

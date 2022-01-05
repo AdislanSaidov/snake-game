@@ -1,18 +1,18 @@
 use std::collections::VecDeque;
 
+use graphics::types::ColorComponent;
 
 use crate::direction::Direction;
 use crate::point::Point;
-use graphics::types::ColorComponent;
 use crate::snake::Snake;
 
-pub struct SnakeConfig{
+pub struct SnakeConfig {
     x: f64,
     y: f64,
     coords: VecDeque<Point>,
     direction: Direction,
     body_color: [ColorComponent; 4],
-    stroke_color: [ColorComponent; 4]
+    stroke_color: [ColorComponent; 4],
 }
 
 impl SnakeConfig {
@@ -23,7 +23,7 @@ impl SnakeConfig {
             coords: snake.coords.clone(),
             direction: snake.direction.clone(),
             body_color: snake.body_color,
-            stroke_color: snake.stroke_color
+            stroke_color: snake.stroke_color,
         }
     }
 
@@ -34,7 +34,7 @@ impl SnakeConfig {
             coords: self.coords.clone(),
             direction: self.direction.clone(),
             body_color: self.body_color,
-            stroke_color: self.stroke_color
+            stroke_color: self.stroke_color,
         }
     }
 }

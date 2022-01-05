@@ -1,12 +1,14 @@
-use graphics::types::ColorComponent;
-use crate::snake::Snake;
-use crate::direction::Direction;
 use std::collections::VecDeque;
-use crate::point::Point;
-use crate::map::Map;
-use crate::food::Food;
+
+use graphics::types::ColorComponent;
 use rand::Rng;
+
+use crate::direction::Direction;
+use crate::food::Food;
+use crate::map::Map;
 use crate::maps::{map_and_snake1, map_and_snake2};
+use crate::point::Point;
+use crate::snake::Snake;
 
 type Colors = ([ColorComponent; 4], [ColorComponent; 4]);
 
@@ -20,7 +22,6 @@ pub fn snake_colors() -> Vec<Colors> {
         ([0.0, 0.0, 0.0, 1.0], [1.0, 1.0, 0.0, 1.0]),
         ([0.0, 0.0, 0.0, 1.0], [1.0, 0.0, 1.0, 1.0]),
         ([0.0, 0.0, 0.0, 1.0], [1.0, 1.0, 1.0, 1.0]),
-
         ([0.0, 0.0, 1.0, 1.0], [0.0, 0.0, 0.0, 1.0]),
         ([0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 0.0, 1.0]),
         ([1.0, 0.0, 0.0, 1.0], [0.0, 0.0, 0.0, 1.0]),
@@ -38,7 +39,6 @@ pub fn wall_colors() -> Vec<Colors> {
 }
 
 pub fn create_stuff() -> (Snake, Map, Food) {
-
     let mut deque: VecDeque<Point> = VecDeque::new();
     deque.push_back((15, 15));
     deque.push_back((15, 16));
@@ -56,7 +56,7 @@ pub fn take_random_colors(colors: Vec<Colors>) -> Colors {
     let mut rng = rand::thread_rng();
     let color_idx = rng.gen_range(0..colors.len());
 
-    return colors[color_idx]
+    return colors[color_idx];
 }
 
 fn take_random_walls_and_snake() -> (Vec<(i32, i32)>, Snake) {
@@ -66,7 +66,7 @@ fn take_random_walls_and_snake() -> (Vec<(i32, i32)>, Snake) {
     return match number {
         0 => map_and_snake1(),
         _ => map_and_snake2()
-    }
+    };
 }
 
 pub fn generate_food(snake_coords: &VecDeque<Point>, wall_coords: &Vec<Point>) -> Food {

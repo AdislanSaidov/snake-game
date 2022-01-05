@@ -1,22 +1,22 @@
 use std::collections::VecDeque;
 
+use graphics::types::ColorComponent;
 use piston_window::{Context, G2d};
 
 use crate::direction::Direction;
+use crate::draw_utils::draw_square;
 use crate::food::Food;
 use crate::game::{CELL_SIZE, END_CELL_IDX, START_CELL_IDX};
-use crate::point::Point;
 use crate::map::Map;
-use crate::draw_utils::draw_square;
-use graphics::types::ColorComponent;
+use crate::point::Point;
 
-pub struct Snake{
+pub struct Snake {
     pub x: f64,
     pub y: f64,
     pub coords: VecDeque<Point>,
     pub direction: Direction,
     pub body_color: [ColorComponent; 4],
-    pub stroke_color: [ColorComponent; 4]
+    pub stroke_color: [ColorComponent; 4],
 }
 
 impl Snake {
@@ -26,19 +26,19 @@ impl Snake {
         direction: Direction,
         coords: VecDeque<Point>,
         body_color: [ColorComponent; 4],
-        stroke_color: [ColorComponent; 4]
+        stroke_color: [ColorComponent; 4],
     ) -> Snake {
-        Snake{
+        Snake {
             x,
             y,
             coords,
             direction,
             body_color,
-            stroke_color
+            stroke_color,
         }
     }
 
-    pub fn draw(&self, context: Context, graphics: &mut G2d,) {
+    pub fn draw(&self, context: Context, graphics: &mut G2d) {
         for (x, y) in &self.coords {
             draw_square(
                 context,
@@ -59,7 +59,7 @@ impl Snake {
             head_x * CELL_SIZE + 6,
             head_y * CELL_SIZE + 6,
             CELL_SIZE - 12,
-            Option::None
+            Option::None,
         );
     }
 
@@ -67,7 +67,7 @@ impl Snake {
         let (food_x, food_y) = food.coords;
         let new_x = self.x.round() as i32;
         let new_y = self.y.round() as i32;
-        return  new_x == food_x && new_y == food_y
+        return new_x == food_x && new_y == food_y;
     }
 
     pub fn collides_with_walls_or_himself(&self, walls: &Map) -> bool {
@@ -163,5 +163,4 @@ impl Snake {
 
         return false;
     }
-
 }

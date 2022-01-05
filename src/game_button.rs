@@ -4,7 +4,7 @@ use piston_window::{Context, G2d, Glyphs};
 use piston_window::*;
 use piston_window::types::ColorComponent;
 
-use crate::draw_utils::{draw_rect};
+use crate::draw_utils::draw_rect;
 use crate::point::Point;
 
 pub struct GameButton {
@@ -14,7 +14,7 @@ pub struct GameButton {
     text: String,
     text_color: [ColorComponent; 4],
     font_size: FontSize,
-    background_color: [ColorComponent; 4]
+    background_color: [ColorComponent; 4],
 }
 
 impl GameButton {
@@ -25,7 +25,7 @@ impl GameButton {
         text: String,
         text_color: [ColorComponent; 4],
         font_size: FontSize,
-        background_color: [ColorComponent; 4]
+        background_color: [ColorComponent; 4],
     ) -> GameButton {
         GameButton {
             coords,
@@ -34,7 +34,7 @@ impl GameButton {
             text,
             text_color,
             font_size,
-            background_color
+            background_color,
         }
     }
 
@@ -83,7 +83,7 @@ impl GameButton {
         let button_end_x = button_start_x + button_width;
         let button_end_y = button_start_y + button_height;
 
-        return  x >= button_start_x &&
+        return x >= button_start_x &&
             x <= button_end_x &&
             y >= button_start_y &&
             y <= button_end_y;
