@@ -4,16 +4,20 @@ extern crate piston_window;
 use piston_window::*;
 
 use crate::game::Game;
+use crate::resources::create_stuff;
 
 mod food;
 mod point;
 mod direction;
 mod game;
 mod snake;
-mod wall;
+mod map;
 mod draw_utils;
 mod bottom_bar;
 mod state;
+mod game_button;
+mod resources;
+mod snake_config;
 
 static FONT_NAME: &str = "Hunger Games.ttf";
 
@@ -30,14 +34,17 @@ fn main() {
     let assets = find_folder::Search::ParentsThenKids(3, 3)
         .for_folder("assets").unwrap();
     let glyphs = window.load_font(assets.join(FONT_NAME)).unwrap();
-
-    let mut game = Game::new(glyphs);
+    let (snake, map, food) = create_stuff();
+    let mut game = Game::new(glyphs, snake, map, food);
 
     while let Some(event) = window.next() {
+        if let Some(pos) = event.mouse_cursor_args() {
+            game.on_mouse_input(pos)
+        }
         match event {
             Event::Loop(Loop::Update(ref upd)) => game.on_update(upd),
             Event::Loop(Loop::Render(_)) => game.on_draw(&mut window, &event),
-            Event::Input(ref inp, _) => game.on_input(inp),
+            Event::Input(ref inp, _) => game.on_input(inp, &event),
             _ => {}
         }
     }

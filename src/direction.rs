@@ -1,5 +1,5 @@
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum Direction {
     LEFT,
     RIGHT,

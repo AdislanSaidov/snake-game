@@ -4,7 +4,7 @@ use piston_window::*;
 
 use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
 
-const BOTTOM_BAR_HEIGHT: f64 = 40.0;
+pub const BOTTOM_BAR_HEIGHT: f64 = 40.0;
 
 pub fn draw_bottom_bar(context: Context, graphics: &mut G2d, glyphs: &mut Glyphs, score: i32) {
     let rect = [0.0, 0.0, WINDOW_WIDTH, BOTTOM_BAR_HEIGHT];

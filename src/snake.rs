@@ -6,14 +6,17 @@ use crate::direction::Direction;
 use crate::food::Food;
 use crate::game::{CELL_SIZE, END_CELL_IDX, SNAKE_COLOR, START_CELL_IDX};
 use crate::point::Point;
-use crate::wall::Walls;
+use crate::map::Map;
 use crate::draw_utils::draw_square;
+use graphics::types::ColorComponent;
 
 pub struct Snake{
     pub x: f64,
     pub y: f64,
     pub coords: VecDeque<Point>,
     pub direction: Direction,
+    pub body_color: [ColorComponent; 4],
+    pub stroke_color: [ColorComponent; 4]
 }
 
 impl Snake {
@@ -21,13 +24,17 @@ impl Snake {
         x: f64,
         y: f64,
         direction: Direction,
-        coords: VecDeque<Point>
+        coords: VecDeque<Point>,
+        body_color: [ColorComponent; 4],
+        stroke_color: [ColorComponent; 4]
     ) -> Snake {
         Snake{
             x,
             y,
             coords,
-            direction
+            direction,
+            body_color,
+            stroke_color
         }
     }
 
@@ -36,11 +43,11 @@ impl Snake {
             draw_square(
                 context,
                 graphics,
-                SNAKE_COLOR,
+                self.body_color,
                 x * CELL_SIZE,
                 y * CELL_SIZE,
                 CELL_SIZE,
-                Option::Some([0.9, 0.0, 0.0, 1.0]),
+                Option::Some(self.stroke_color),
             );
         }
         let (head_x, head_y) = self.coords[0];
@@ -63,7 +70,7 @@ impl Snake {
         return  new_x == food_x && new_y == food_y
     }
 
-    pub fn collides_with_walls_or_himself(&self, walls: &Walls) -> bool {
+    pub fn collides_with_walls_or_himself(&self, walls: &Map) -> bool {
         let new_x = self.x.round() as i32;
         let new_y = self.y.round() as i32;
         let point = (new_x, new_y);
@@ -111,7 +118,7 @@ impl Snake {
         return true;
     }
 
-    pub fn handle_movement(&mut self, v: f64, walls: &Walls) -> bool {
+    pub fn handle_movement(&mut self, v: f64, walls: &Map) -> bool {
         match self.direction {
             Direction::LEFT => {
                 let new_value = self.x - v;
