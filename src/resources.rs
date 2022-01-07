@@ -6,7 +6,7 @@ use rand::Rng;
 use crate::direction::Direction;
 use crate::food::Food;
 use crate::map::Map;
-use crate::maps::{map_and_snake1, map_and_snake2};
+use crate::maps::{map_and_snake1, map_and_snake2, map_and_snake3, map_and_snake4, map_and_snake5};
 use crate::point::Point;
 use crate::snake::Snake;
 
@@ -32,9 +32,10 @@ pub fn snake_colors() -> Vec<Colors> {
 pub fn wall_colors() -> Vec<Colors> {
     return vec![
         ([0.67, 0.65, 0.6, 1.0], [0.5, 0.5, 0.4, 1.0]),
-        ([0.0, 0.0, 0.6, 1.0], [0.0, 0.0, 0.0, 1.0]),
-        ([0.6, 0.0, 0.0, 1.0], [0.0, 0.0, 0.0, 1.0]),
-        ([0.0, 0.6, 0.0, 1.0], [0.0, 0.0, 0.0, 1.0]),
+        ([0.5, 0.44, 0.63, 1.0], [0.54, 0.49, 0.71, 1.0]),
+        ([0.95, 0.4, 0.18, 1.0], [0.87, 0.85, 0.78, 1.0]),
+        ([0.79, 0.2, 0.01, 1.0], [0.27, 0.11, 0.0, 1.0]),
+        ([0.38, 0.35, 0.3, 1.0], [0.0, 0.0, 0.0, 1.0]),
     ];
 }
 
@@ -61,12 +62,16 @@ pub fn take_random_colors(colors: Vec<Colors>) -> Colors {
 
 fn take_random_walls_and_snake() -> (Vec<(i32, i32)>, Snake) {
     let mut rng = rand::thread_rng();
-    let number = rng.gen_range(0..2);
+    let factories: Vec<fn() -> (Vec<(i32, i32)>, Snake)> = vec![
+        map_and_snake1,
+        map_and_snake2,
+        map_and_snake3,
+        map_and_snake4,
+        map_and_snake5
+    ];
+    let number = rng.gen_range(0..factories.len());
 
-    return match number {
-        0 => map_and_snake1(),
-        _ => map_and_snake2()
-    };
+    return factories[number]();
 }
 
 pub fn generate_food(snake_coords: &VecDeque<Point>, wall_coords: &Vec<Point>) -> Food {
