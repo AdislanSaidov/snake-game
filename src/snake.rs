@@ -17,6 +17,7 @@ pub struct Snake {
     pub direction: Direction,
     pub body_color: [ColorComponent; 4],
     pub stroke_color: [ColorComponent; 4],
+    pub is_new_direction_handled: bool
 }
 
 impl Snake {
@@ -27,7 +28,7 @@ impl Snake {
         coords: VecDeque<Point>,
         body_color: [ColorComponent; 4],
         stroke_color: [ColorComponent; 4],
-    ) -> Snake {
+    ) -> Self {
         Snake {
             x,
             y,
@@ -35,6 +36,7 @@ impl Snake {
             direction,
             body_color,
             stroke_color,
+            is_new_direction_handled: true
         }
     }
 
@@ -70,14 +72,14 @@ impl Snake {
         return new_x == food_x && new_y == food_y;
     }
 
-    pub fn collides_with_walls_or_himself(&self, walls: &Map) -> bool {
+    fn collides_with_walls_or_himself(&self, map: &Map) -> bool {
         let new_x = self.x.round() as i32;
         let new_y = self.y.round() as i32;
         let point = (new_x, new_y);
-        return self.coords.contains(&point) || walls.coords.contains(&point);
+        return self.coords.contains(&point) || map.coords.contains(&point);
     }
 
-    pub fn handle_off_screen_movement(&mut self) {
+    fn handle_off_screen_movement(&mut self) {
         let new_x = self.x.round();
         let new_y = self.y.round();
         let start_cell_idx = START_CELL_IDX as f64;
@@ -102,23 +104,26 @@ impl Snake {
         self.coords.push_back((last_item.0, last_item.1))
     }
 
-    pub fn move_one_step(&mut self) {
+    fn move_one_step(&mut self) {
         let new_x = self.x.round() as i32;
         let new_y = self.y.round() as i32;
         let point = (new_x, new_y);
         self.coords.push_front(point);
         self.coords.pop_back();
+        self.is_new_direction_handled = true;
     }
 
     pub fn change_direction(&mut self, new_direction: Direction, opposite_direction: Direction) -> bool {
-        if self.direction == opposite_direction {
+        if !self.is_new_direction_handled || self.direction == opposite_direction {
             return false;
         }
         self.direction = new_direction;
+        self.is_new_direction_handled = false;
+
         return true;
     }
 
-    pub fn handle_movement(&mut self, v: f64, walls: &Map) -> bool {
+    pub fn handle_movement(&mut self, v: f64, map: &Map) -> bool {
         match self.direction {
             Direction::LEFT => {
                 let new_value = self.x - v;
@@ -156,7 +161,7 @@ impl Snake {
 
         self.handle_off_screen_movement();
 
-        if self.collides_with_walls_or_himself(&walls) {
+        if self.collides_with_walls_or_himself(&map) {
             return true;
         }
         self.move_one_step();

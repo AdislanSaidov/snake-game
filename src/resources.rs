@@ -3,7 +3,6 @@ use std::collections::VecDeque;
 use graphics::types::ColorComponent;
 use rand::Rng;
 
-use crate::direction::Direction;
 use crate::food::Food;
 use crate::map::Map;
 use crate::maps::{map_and_snake1, map_and_snake2, map_and_snake3, map_and_snake4, map_and_snake5};

@@ -20,11 +20,11 @@ pub const START_CELL_IDX: i32 = 0;
 
 pub struct Game {
     food: Food,
-    should_restart_level: bool,
+    should_restart: bool,
     score: i32,
     glyphs: Glyphs,
     snake: Snake,
-    walls: Map,
+    map: Map,
     state: State,
     button: GameButton,
     last_mouse_pos: Option<[f64; 2]>,
@@ -54,9 +54,9 @@ impl Game {
 
         Game {
             snake,
-            walls: map,
+            map,
             food,
-            should_restart_level: false,
+            should_restart: false,
             score: 0,
             glyphs,
             state: State::NotStarted,
@@ -66,27 +66,19 @@ impl Game {
         }
     }
 
-
     fn new_game(&mut self) {
         self.state = State::NotStarted;
         let (snake, map, food) = create_stuff();
         self.snake_config = SnakeConfig::from_snake(&snake);
         self.snake = snake;
-        self.walls = map;
+        self.map = map;
         self.food = food;
         self.score = 0;
     }
 
     pub fn on_update(&mut self, upd: &UpdateArgs) {
-        if self.should_restart_level {
-            self.should_restart_level = false;
-            self.state = State::NotStarted;
-            self.score = 0;
-
-            self.snake = self.snake_config.to_snake();
-            let food = generate_food(&self.snake.coords, &self.walls.coords);
-            self.food = food;
-
+        if self.should_restart {
+            self.restart();
             return;
         }
         if self.state != State::Playing {
@@ -94,7 +86,7 @@ impl Game {
         }
         // 5 cells per second
         let v = 5.0 * upd.dt;
-        let is_game_over = self.snake.handle_movement(v, &self.walls);
+        let is_game_over = self.snake.handle_movement(v, &self.map);
 
         if is_game_over {
             self.state = State::GameOver;
@@ -104,15 +96,23 @@ impl Game {
         if self.snake.collides_with_food(&self.food) {
             self.snake.eat_food();
             self.score += 1;
-            self.food = generate_food(&self.snake.coords, &self.walls.coords);
+            self.food = generate_food(&self.snake.coords, &self.map.coords);
         }
+    }
+
+    fn restart(&mut self) {
+        self.should_restart = false;
+        self.state = State::NotStarted;
+        self.score = 0;
+        self.snake = self.snake_config.to_snake();
+        self.food = generate_food(&self.snake.coords, &self.map.coords);
     }
 
     pub fn on_draw(&mut self, window: &mut PistonWindow, event: &Event) {
         window.draw_2d(event, |context, graphics, device| {
             clear([0.0, 0.0, 0.0, 1.0], graphics);
 
-            self.walls.draw(context, graphics);
+            self.map.draw(context, graphics);
             self.snake.draw(context, graphics);
             self.food.draw(context, graphics);
 
@@ -162,7 +162,7 @@ impl Game {
                         Button::Mouse(_button) => {}
                         _ => {
                             if self.state == State::GameOver {
-                                self.should_restart_level = true;
+                                self.should_restart = true;
                                 return;
                             }
                         }
@@ -185,11 +185,17 @@ impl Game {
                             self.verify_moving();
                             self.snake.change_direction(Direction::RIGHT, Direction::LEFT);
                         }
+                        Button::Keyboard(Key::N) => {
+                            self.new_game();
+                        }
                         Button::Keyboard(Key::P) => {
-                            self.handle_pause()
+                            self.pause();
+                        }
+                        Button::Keyboard(Key::R) => {
+                            self.restart();
                         }
                         Button::Keyboard(Key::Space) => {
-                            self.handle_pause()
+                            self.pause();
                         }
                         Button::Mouse(MouseButton::Left) => {
                             self.last_mouse_pos.map(|pos| {
@@ -208,7 +214,7 @@ impl Game {
         }
     }
 
-    fn handle_pause(&mut self) {
+    fn pause(&mut self) {
         match self.state {
             State::Paused => {
                 self.state = State::Playing

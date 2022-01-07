@@ -28,14 +28,14 @@ impl SnakeConfig {
     }
 
     pub fn to_snake(&self) -> Snake {
-        Snake {
-            x: self.x,
-            y: self.y,
-            coords: self.coords.clone(),
-            direction: self.direction.clone(),
-            body_color: self.body_color,
-            stroke_color: self.stroke_color,
-        }
+        Snake::new(
+            self.x,
+            self.y,
+            self.direction.clone(),
+            self.coords.clone(),
+            self.body_color,
+            self.stroke_color
+        )
     }
 }
 
