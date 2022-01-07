@@ -100,7 +100,7 @@ impl Snake {
 
     pub fn eat_food(&mut self) {
         let last_idx = self.coords.len() - 1;
-        let last_item = self.coords.get(last_idx).unwrap();
+        let last_item = self.coords[last_idx];
         self.coords.push_back((last_item.0, last_item.1))
     }
 

@@ -55,24 +55,25 @@ impl GameButton {
             Option::Some([1.0, 0.0, 0.0, 1.0]),
         );
 
-        let text_width = glyphs.width(self.font_size, &self.text).ok().unwrap() as f64;
-        let free_space_width_in_button = button_width - text_width;
-        let horizontal_margin = free_space_width_in_button / 2.0;
+        glyphs.width(self.font_size, &self.text).map(|text_width| {
+            let free_space_width_in_button = button_width - text_width;
+            let horizontal_margin = free_space_width_in_button / 2.0;
 
-        let free_space_height_in_button = button_height - self.font_size as f64;
-        let vertical_margin = free_space_height_in_button / 2.0;
+            let free_space_height_in_button = button_height - self.font_size as f64;
+            let vertical_margin = free_space_height_in_button / 2.0;
 
-        let text_start_x = button_start_x + horizontal_margin;
-        let start_text_y = button_end_y - vertical_margin;
-        let transform = context.transform.trans(text_start_x, start_text_y);
+            let text_start_x = button_start_x + horizontal_margin;
+            let start_text_y = button_end_y - vertical_margin;
+            let transform = context.transform.trans(text_start_x, start_text_y);
 
-        Text::new_color(self.text_color, self.font_size).draw(
-            &self.text,
-            glyphs,
-            &context.draw_state,
-            transform,
-            graphics,
-        ).unwrap();
+            Text::new_color(self.text_color, self.font_size).draw(
+                &self.text,
+                glyphs,
+                &context.draw_state,
+                transform,
+                graphics,
+            ).unwrap_or_else(|err| println!("{:?}", err))
+        }).ok();
     }
 
     pub fn is_clicked(&self, x: f64, y: f64) -> bool {

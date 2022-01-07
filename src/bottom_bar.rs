@@ -28,5 +28,5 @@ pub fn draw_bottom_bar(context: Context, graphics: &mut G2d, glyphs: &mut Glyphs
         &context.draw_state,
         transform,
         graphics,
-    ).unwrap();
+    ).unwrap_or_else(|err| println!("{:?}", err));
 }

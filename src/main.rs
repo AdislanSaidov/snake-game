@@ -31,10 +31,15 @@ fn main() {
         .exit_on_esc(true)
         .resizable(false)
         .build()
-        .unwrap();
+        .expect("Unable to build a window");
+
     let assets = find_folder::Search::ParentsThenKids(3, 3)
-        .for_folder("assets").unwrap();
-    let glyphs = window.load_font(assets.join(FONT_NAME)).unwrap();
+        .for_folder("assets")
+        .expect("Unable to read assets");
+
+    let glyphs = window.load_font(assets.join(FONT_NAME))
+        .expect("Unable to load font");
+
     let (snake, map, food) = create_stuff();
     let mut game = Game::new(glyphs, snake, map, food);
 

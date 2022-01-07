@@ -135,19 +135,20 @@ impl Game {
 
     fn draw_message(&mut self, context: &Context, graphics: &mut G2d, text: &str) {
         let font_size = 24;
-        let text_width = self.glyphs.width(font_size, text).ok().unwrap();
-        let x = WINDOW_WIDTH / 2. - text_width / 2.;
-        let y = WINDOW_HEIGHT / 2.;
+        self.glyphs.width(font_size, text).map(|text_width|{
+            let x = WINDOW_WIDTH / 2. - text_width / 2.;
+            let y = WINDOW_HEIGHT / 2.;
 
-        let transform = context.transform.trans(x, y);
+            let transform = context.transform.trans(x, y);
 
-        Text::new_color([0.0, 1.0, 0.0, 1.0], font_size).draw(
-            text,
-            &mut self.glyphs,
-            &context.draw_state,
-            transform,
-            graphics,
-        ).unwrap_or_else(|err| println!("{:?}", err));
+            Text::new_color([0.0, 1.0, 0.0, 1.0], font_size).draw(
+                text,
+                &mut self.glyphs,
+                &context.draw_state,
+                transform,
+                graphics,
+            ).unwrap_or_else(|err| println!("{:?}", err));
+        }).ok();
     }
 
     pub fn on_mouse_input(&mut self, pos: [f64; 2]) {
