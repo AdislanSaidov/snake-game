@@ -3,21 +3,6 @@
 version = 3
 
 [[package]]
-name = "SnakeGame"
-version = "0.1.0"
-dependencies = [
- "find_folder",
- "image",
- "piston",
- "piston2d-graphics",
- "piston2d-opengl_graphics",
- "piston_window",
- "pistoncore-glutin_window",
- "rand",
- "vecmath",
-]
-
-[[package]]
 name = "ab_glyph_rasterizer"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1505,6 +1490,21 @@ dependencies = [
  "wayland-client",
  "wayland-cursor",
  "wayland-protocols",
+]
+
+[[package]]
+name = "snake_game"
+version = "0.1.0"
+dependencies = [
+ "find_folder",
+ "image",
+ "piston",
+ "piston2d-graphics",
+ "piston2d-opengl_graphics",
+ "piston_window",
+ "pistoncore-glutin_window",
+ "rand",
+ "vecmath",
 ]
 
 [[package]]
