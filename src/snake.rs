@@ -21,7 +21,6 @@ pub struct Snake {
 
 impl Snake {
     pub fn new(
-        direction: Direction,
         coords: VecDeque<Point>,
         body_color: Color,
         stroke_color: Color,
@@ -29,6 +28,8 @@ impl Snake {
         let head_point = coords[0];
         let x = head_point.0 as f64;
         let y = head_point.1 as f64;
+
+        let direction = Self::detect_direction(&coords);
 
         Snake {
             x,
@@ -38,6 +39,24 @@ impl Snake {
             body_color,
             stroke_color,
             is_new_direction_handled: true
+        }
+    }
+
+    fn detect_direction(coords: &VecDeque<Point>) -> Direction {
+        let head = coords[0];
+        let second = coords[1];
+        if head.0 == second.0 {
+            if head.1 < second.1 {
+                Direction::UP
+            } else {
+                Direction::DOWN
+            }
+        } else {
+            if head.0 < second.0 {
+                Direction::LEFT
+            } else {
+                Direction::RIGHT
+            }
         }
     }
 

@@ -5,7 +5,7 @@ use rand::Rng;
 use crate::draw_utils::Color;
 use crate::food::Food;
 use crate::map::Map;
-use crate::maps::{create_map_and_snake1, create_map_and_snake2, create_map_and_snake3, create_map_and_snake4, create_map_and_snake5};
+use crate::maps::{create_walls_and_snake_structs1, create_walls_and_snake_structs2, create_walls_and_snake_structs3, create_walls_and_snake_structs4, create_walls_and_snake_structs5, verify_correct_snake_structure, verify_correct_walls_structure};
 use crate::point::Point;
 use crate::snake::Snake;
 
@@ -38,9 +38,15 @@ pub fn get_wall_colors() -> Vec<Colors> {
 }
 
 pub fn create_stuff() -> (Snake, Map, Food) {
-    let (walls, snake) = take_random_walls_and_snake();
+    let (walls, snake_coords) = take_random_walls_and_snake();
     let (wall_background_color, wall_stroke_color) = take_random_colors(get_wall_colors());
+    verify_correct_walls_structure(&walls);
+    verify_correct_snake_structure(&snake_coords);
+
     let map = Map::new(walls, wall_background_color, wall_stroke_color);
+
+    let (snake_body_color, snake_stroke_color) = take_random_colors(get_snake_colors());
+    let snake = Snake::new(snake_coords, snake_body_color, snake_stroke_color);
 
     let food = generate_food(&snake.coords, &map.coords);
     return (snake, map, food);
@@ -53,14 +59,14 @@ pub fn take_random_colors(colors: Vec<Colors>) -> Colors {
     return colors[color_idx];
 }
 
-fn take_random_walls_and_snake() -> (Vec<(i32, i32)>, Snake) {
+fn take_random_walls_and_snake() -> (Vec<(i32, i32)>, VecDeque<Point>) {
     let mut rng = rand::thread_rng();
-    let factories: Vec<fn() -> (Vec<(i32, i32)>, Snake)> = vec![
-        create_map_and_snake1,
-        create_map_and_snake2,
-        create_map_and_snake3,
-        create_map_and_snake4,
-        create_map_and_snake5,
+    let factories: Vec<fn() -> (Vec<(i32, i32)>, VecDeque<Point>)> = vec![
+        create_walls_and_snake_structs1,
+        create_walls_and_snake_structs2,
+        create_walls_and_snake_structs3,
+        create_walls_and_snake_structs4,
+        create_walls_and_snake_structs5,
     ];
     let number = rng.gen_range(0..factories.len());
 

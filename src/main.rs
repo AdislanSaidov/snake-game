@@ -20,6 +20,7 @@ mod resources;
 mod snake_config;
 mod maps;
 mod alert;
+mod utils;
 
 static FONT_NAME: &str = "Hunger Games.ttf";
 
