@@ -41,7 +41,9 @@ impl Snake {
     }
 
     pub fn draw(&self, context: Context, graphics: &mut G2d) {
-        for (x, y) in &self.coords {
+        for &point in &self.coords {
+            let x = point.0 as f64;
+            let y = point.1 as f64;
             draw_square(
                 context,
                 graphics,
@@ -52,15 +54,17 @@ impl Snake {
                 Option::Some(self.stroke_color),
             );
         }
-        let (head_x, head_y) = self.coords[0];
+        let head_coords = self.coords[0];
+        let head_x = head_coords.0 as f64;
+        let head_y = head_coords.1 as f64;
 
         draw_square(
             context,
             graphics,
             self.stroke_color,
-            head_x * CELL_SIZE + 6,
-            head_y * CELL_SIZE + 6,
-            CELL_SIZE - 12,
+            head_x * CELL_SIZE + 6.,
+            head_y * CELL_SIZE + 6.,
+            CELL_SIZE - 12.0,
             Option::None,
         );
     }

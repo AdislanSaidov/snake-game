@@ -25,7 +25,10 @@ impl Map {
     }
 
     pub fn draw(&self, context: Context, graphics: &mut G2d) {
-        for (x, y) in &self.coords {
+        for &point in &self.coords {
+            let x = point.0 as f64;
+            let y = point.1 as f64;
+
             draw_square(
                 context,
                 graphics,

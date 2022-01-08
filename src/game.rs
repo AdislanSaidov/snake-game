@@ -13,7 +13,7 @@ use crate::snake::Snake;
 use crate::snake_config::SnakeConfig;
 use crate::state::State;
 
-pub const CELL_SIZE: i32 = 20;
+pub const CELL_SIZE: f64 = 20.;
 pub const END_CELL_IDX: i32 = 29;
 pub const START_CELL_IDX: i32 = 0;
 
@@ -84,6 +84,8 @@ impl Game {
         if self.state != State::Playing {
             return;
         }
+        self.food.update(upd.dt);
+
         // 5 cells per second
         let v = 5.0 * upd.dt;
         let is_game_over = self.snake.handle_movement(v, &self.map);

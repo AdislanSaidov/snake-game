@@ -49,9 +49,10 @@ impl GameButton {
             context,
             graphics,
             self.background_color,
-            self.coords,
-            self.width,
-            self.height,
+            button_start_x,
+            button_start_y,
+            self.width as f64,
+            self.height as f64,
             Option::Some([1.0, 0.0, 0.0, 1.0]),
         );
 
