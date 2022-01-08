@@ -3,14 +3,16 @@ use graphics::types::ColorComponent;
 use piston_window::*;
 use piston_window::G2d;
 
+pub type Color = [ColorComponent; 4];
+
 pub fn draw_square(
     context: Context,
     graphics: &mut G2d,
-    color: [ColorComponent; 4],
+    color: Color,
     x: f64,
     y: f64,
     size: f64,
-    stroke_color: Option<[ColorComponent; 4]>,
+    stroke_color: Option<Color>,
 ) {
     draw_rect(context, graphics, color, x, y, size, size, stroke_color);
 }
@@ -18,12 +20,12 @@ pub fn draw_square(
 pub fn draw_rect(
     context: Context,
     graphics: &mut G2d,
-    color: [ColorComponent; 4],
+    color: Color,
     x: f64,
     y: f64,
     width: f64,
     height: f64,
-    stroke_color: Option<[ColorComponent; 4]>,
+    stroke_color: Option<Color>,
 ) {
     let square = [0.0, 0.0, width, height];
     let transform = context.transform.trans(x, y);

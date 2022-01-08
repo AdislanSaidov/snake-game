@@ -2,11 +2,11 @@ extern crate piston_window;
 
 use piston_window::*;
 
-use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
-use crate::bottom_bar::{BOTTOM_BAR_HEIGHT, draw_bottom_bar};
+use crate::WINDOW_WIDTH;
+use crate::alert::Alert;
+use crate::bottom_bar::BottomBar;
 use crate::direction::Direction;
 use crate::food::Food;
-use crate::game_button::GameButton;
 use crate::map::Map;
 use crate::resources::{create_stuff, generate_food};
 use crate::snake::Snake;
@@ -20,49 +20,38 @@ pub const START_CELL_IDX: i32 = 0;
 
 pub struct Game {
     food: Food,
-    should_restart: bool,
     score: i32,
     glyphs: Glyphs,
     snake: Snake,
     map: Map,
     state: State,
-    button: GameButton,
     last_mouse_pos: Option<[f64; 2]>,
     snake_config: SnakeConfig,
+    bottom_bar: BottomBar,
+    game_over_alert: Alert,
+    pause_alert: Alert
 }
-
 
 impl Game {
     pub fn new(glyphs: Glyphs, snake: Snake, map: Map, food: Food) -> Self {
         let snake_config = SnakeConfig::from_snake(&snake);
 
-        let button_height = 32;
-        let button_width = 120;
-        let button_end_margin = 10;
-        let game_area_height = (WINDOW_HEIGHT - BOTTOM_BAR_HEIGHT) as i32;
-        let button_x = WINDOW_WIDTH as i32 - button_width - button_end_margin;
-        let button_y = game_area_height + (WINDOW_HEIGHT as i32 - (game_area_height + button_height)) / 2;
-        let button = GameButton::new(
-            (button_x, button_y),
-            button_width,
-            button_height,
-            "New game".to_string(),
-            [1.0, 0.0, 0.0, 1.0],
-            8,
-            [0.0, 0.0, 0.0, 1.0],
-        );
-
         Game {
             snake,
             map,
             food,
-            should_restart: false,
             score: 0,
             glyphs,
             state: State::NotStarted,
-            button,
             last_mouse_pos: Option::None,
             snake_config,
+            bottom_bar: BottomBar::new(
+                WINDOW_WIDTH,
+                40.0,
+                [0.05, 0.05, 0.05, 1.0]
+            ),
+            game_over_alert: Alert::new("GAME OVER!".into(), 24, [0.5, 0.5, 0.0, 1.0]),
+            pause_alert: Alert::new("Pause".into(), 24, [0.0, 1.0, 0.0, 1.0])
         }
     }
 
@@ -77,33 +66,30 @@ impl Game {
     }
 
     pub fn on_update(&mut self, upd: &UpdateArgs) {
-        if self.should_restart {
-            self.restart();
-            return;
-        }
         if self.state != State::Playing {
             return;
         }
         self.food.update(upd.dt);
 
-        // 5 cells per second
-        let v = 5.0 * upd.dt;
-        let is_game_over = self.snake.handle_movement(v, &self.map);
+        let has_collision = self.snake.handle_movement(upd.dt, &self.map);
 
-        if is_game_over {
+        if has_collision {
             self.state = State::GameOver;
             return;
         }
 
         if self.snake.collides_with_food(&self.food) {
-            self.snake.eat_food();
-            self.score += 1;
-            self.food = generate_food(&self.snake.coords, &self.map.coords);
+            self.eat_food();
         }
     }
 
+    fn eat_food(&mut self) {
+        self.snake.eat_food();
+        self.score += 1;
+        self.food = generate_food(&self.snake.coords, &self.map.coords);
+    }
+
     fn restart(&mut self) {
-        self.should_restart = false;
         self.state = State::NotStarted;
         self.score = 0;
         self.snake = self.snake_config.to_snake();
@@ -120,37 +106,17 @@ impl Game {
 
             match self.state {
                 State::GameOver => {
-                    self.draw_message(&context, graphics, "GAME OVER!");
+                    self.game_over_alert.draw(context, graphics, &mut self.glyphs);
                 }
                 State::Paused => {
-                    self.draw_message(&context, graphics, "Pause");
+                    self.pause_alert.draw(context, graphics, &mut self.glyphs);
                 }
                 _ => {}
             }
-
-            draw_bottom_bar(context, graphics, &mut self.glyphs, self.score);
-            self.button.draw(context, graphics, &mut self.glyphs);
+            self.bottom_bar.draw(context, graphics, &mut self.glyphs, self.score);
 
             self.glyphs.factory.encoder.flush(device);
         });
-    }
-
-    fn draw_message(&mut self, context: &Context, graphics: &mut G2d, text: &str) {
-        let font_size = 24;
-        self.glyphs.width(font_size, text).map(|text_width|{
-            let x = WINDOW_WIDTH / 2. - text_width / 2.;
-            let y = WINDOW_HEIGHT / 2.;
-
-            let transform = context.transform.trans(x, y);
-
-            Text::new_color([0.0, 1.0, 0.0, 1.0], font_size).draw(
-                text,
-                &mut self.glyphs,
-                &context.draw_state,
-                transform,
-                graphics,
-            ).unwrap_or_else(|err| println!("{:?}", err));
-        }).ok();
     }
 
     pub fn on_mouse_input(&mut self, pos: [f64; 2]) {
@@ -165,7 +131,7 @@ impl Game {
                         Button::Mouse(_button) => {}
                         _ => {
                             if self.state == State::GameOver {
-                                self.should_restart = true;
+                                self.restart();
                                 return;
                             }
                         }
@@ -173,37 +139,36 @@ impl Game {
 
                     match button_args.button {
                         Button::Keyboard(Key::Up) => {
-                            self.verify_moving();
-                            self.snake.change_direction(Direction::TOP, Direction::BOTTOM);
+                            self.play();
+                            self.snake.change_direction(Direction::UP);
                         }
                         Button::Keyboard(Key::Down) => {
-                            self.verify_moving();
-                            self.snake.change_direction(Direction::BOTTOM, Direction::TOP);
+                            self.play();
+                            self.snake.change_direction(Direction::DOWN);
                         }
                         Button::Keyboard(Key::Left) => {
-                            self.verify_moving();
-                            self.snake.change_direction(Direction::LEFT, Direction::RIGHT);
+                            self.play();
+                            self.snake.change_direction(Direction::LEFT);
                         }
                         Button::Keyboard(Key::Right) => {
-                            self.verify_moving();
-                            self.snake.change_direction(Direction::RIGHT, Direction::LEFT);
+                            self.play();
+                            self.snake.change_direction(Direction::RIGHT);
                         }
                         Button::Keyboard(Key::N) => {
                             self.new_game();
                         }
                         Button::Keyboard(Key::P) => {
-                            self.pause();
+                            self.toggle_paused_state();
                         }
                         Button::Keyboard(Key::R) => {
                             self.restart();
                         }
                         Button::Keyboard(Key::Space) => {
-                            self.pause();
+                            self.toggle_paused_state();
                         }
                         Button::Mouse(MouseButton::Left) => {
                             self.last_mouse_pos.map(|pos| {
-                                let (x, y) = (pos[0], pos[1]);
-                                if self.button.is_clicked(x, y) {
+                                if self.bottom_bar.is_button_clicked(pos[0], pos[1]) {
                                     self.new_game();
                                 }
                             });
@@ -217,7 +182,7 @@ impl Game {
         }
     }
 
-    fn pause(&mut self) {
+    fn toggle_paused_state(&mut self) {
         match self.state {
             State::Paused => {
                 self.state = State::Playing
@@ -228,7 +193,7 @@ impl Game {
         }
     }
 
-    fn verify_moving(&mut self) {
+    fn play(&mut self) {
         if self.state == State::NotStarted || self.state == State::Paused {
             self.state = State::Playing
         }

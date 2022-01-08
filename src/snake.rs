@@ -1,10 +1,9 @@
 use std::collections::VecDeque;
 
-use graphics::types::ColorComponent;
 use piston_window::{Context, G2d};
 
 use crate::direction::Direction;
-use crate::draw_utils::draw_square;
+use crate::draw_utils::{Color, draw_square};
 use crate::food::Food;
 use crate::game::{CELL_SIZE, END_CELL_IDX, START_CELL_IDX};
 use crate::map::Map;
@@ -15,20 +14,22 @@ pub struct Snake {
     pub y: f64,
     pub coords: VecDeque<Point>,
     pub direction: Direction,
-    pub body_color: [ColorComponent; 4],
-    pub stroke_color: [ColorComponent; 4],
+    pub body_color: Color,
+    pub stroke_color: Color,
     pub is_new_direction_handled: bool
 }
 
 impl Snake {
     pub fn new(
-        x: f64,
-        y: f64,
         direction: Direction,
         coords: VecDeque<Point>,
-        body_color: [ColorComponent; 4],
-        stroke_color: [ColorComponent; 4],
+        body_color: Color,
+        stroke_color: Color,
     ) -> Self {
+        let head_point = coords[0];
+        let x = head_point.0 as f64;
+        let y = head_point.1 as f64;
+
         Snake {
             x,
             y,
@@ -64,7 +65,7 @@ impl Snake {
             self.stroke_color,
             head_x * CELL_SIZE + 6.,
             head_y * CELL_SIZE + 6.,
-            CELL_SIZE - 12.0,
+            CELL_SIZE - 12.,
             Option::None,
         );
     }
@@ -117,8 +118,10 @@ impl Snake {
         self.is_new_direction_handled = true;
     }
 
-    pub fn change_direction(&mut self, new_direction: Direction, opposite_direction: Direction) -> bool {
-        if !self.is_new_direction_handled || self.direction == opposite_direction {
+    pub fn change_direction(&mut self, new_direction: Direction) -> bool {
+        if !self.is_new_direction_handled ||
+            self.direction == new_direction ||
+            self.direction.get_opposite() == new_direction {
             return false;
         }
         self.direction = new_direction;
@@ -127,10 +130,11 @@ impl Snake {
         return true;
     }
 
-    pub fn handle_movement(&mut self, v: f64, map: &Map) -> bool {
+    pub fn handle_movement(&mut self, dt: f64, map: &Map) -> bool {
+        let new_dt = 5.0 * dt;
         match self.direction {
             Direction::LEFT => {
-                let new_value = self.x - v;
+                let new_value = self.x - new_dt;
                 let old_value = self.x;
                 self.x = new_value;
                 if new_value.round() == old_value.round() {
@@ -138,23 +142,23 @@ impl Snake {
                 }
             }
             Direction::RIGHT => {
-                let new_value = self.x + v;
+                let new_value = self.x + new_dt;
                 let old_value = self.x;
                 self.x = new_value;
                 if new_value.round() == old_value.round() {
                     return false;
                 }
             }
-            Direction::TOP => {
-                let new_value = self.y - v;
+            Direction::UP => {
+                let new_value = self.y - new_dt;
                 let old_value = self.y;
                 self.y = new_value;
                 if new_value.round() == old_value.round() {
                     return false;
                 }
             }
-            Direction::BOTTOM => {
-                let new_value = self.y + v;
+            Direction::DOWN => {
+                let new_value = self.y + new_dt;
                 let old_value = self.y;
                 self.y = new_value;
                 if new_value.round() == old_value.round() {

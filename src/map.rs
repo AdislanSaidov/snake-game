@@ -1,21 +1,20 @@
-use graphics::types::ColorComponent;
 use piston_window::{Context, G2d};
 
-use crate::draw_utils::draw_square;
+use crate::draw_utils::{Color, draw_square};
 use crate::game::CELL_SIZE;
 use crate::point::Point;
 
 pub struct Map {
     pub coords: Vec<Point>,
-    background_color: [ColorComponent; 4],
-    stroke_color: [ColorComponent; 4],
+    background_color: Color,
+    stroke_color: Color,
 }
 
 impl Map {
     pub fn new(
         coords: Vec<Point>,
-        background_color: [ColorComponent; 4],
-        stroke_color: [ColorComponent; 4],
+        background_color: Color,
+        stroke_color: Color,
     ) -> Map {
         Map {
             coords,

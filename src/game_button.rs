@@ -2,9 +2,8 @@ use graphics::{CharacterCache, Text};
 use graphics::types::FontSize;
 use piston_window::{Context, G2d, Glyphs};
 use piston_window::*;
-use piston_window::types::ColorComponent;
 
-use crate::draw_utils::draw_rect;
+use crate::draw_utils::{Color, draw_rect};
 use crate::point::Point;
 
 pub struct GameButton {
@@ -12,9 +11,9 @@ pub struct GameButton {
     width: i32,
     height: i32,
     text: String,
-    text_color: [ColorComponent; 4],
+    text_color: Color,
     font_size: FontSize,
-    background_color: [ColorComponent; 4],
+    background_color: Color,
 }
 
 impl GameButton {
@@ -23,9 +22,9 @@ impl GameButton {
         width: i32,
         height: i32,
         text: String,
-        text_color: [ColorComponent; 4],
+        text_color: Color,
         font_size: FontSize,
-        background_color: [ColorComponent; 4],
+        background_color: Color,
     ) -> GameButton {
         GameButton {
             coords,
